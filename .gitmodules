@@ -9,6 +9,3 @@
 [submodule "third-party/boost-hana"]
 	path = third-party/boost-hana
 	url = https://github.com/boostorg/hana.git
-[submodule "third-party/rpavlik-cmake-modules"]
-	path = third-party/rpavlik-cmake-modules
-	url = https://github.com/boostorg/hana.git
