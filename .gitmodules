@@ -1,0 +1,11 @@
+[submodule "third-party/tbb"]
+	path = third-party/tbb
+	url = https://github.com/01org/tbb.git
+	branch = tbb_2018
+[submodule "third-pary/boost"]
+	path = third-party/boost
+	url = https://github.com/Orphis/boost-cmake.git
+	branch = boost1.66.0
+[submodule "third-party/boost-hana"]
+	path = third-party/boost-hana
+	url = https://github.com/boostorg/hana.git
