@@ -1,17 +1,15 @@
 //
 //  Created by Robert Binna
 //
-#define BOOST_TEST_DYN_LINK
-
 #include <cstring>
 
 #include <utility>
 #include <string>
 
 #include <boost/test/unit_test.hpp>
-#include <spider/contenthelpers/OptionalValue.hpp>
+#include <idx/contenthelpers/OptionalValue.hpp>
 
-namespace spider { namespace contenthelpers {
+namespace idx { namespace contenthelpers {
 
 BOOST_AUTO_TEST_SUITE(OptionalValueTest)
 

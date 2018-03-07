@@ -1,14 +1,12 @@
 //
 //  Created by Robert Binna
 //
-#define BOOST_TEST_DYN_LINK
-
 #include <boost/test/unit_test.hpp>
-#include <spider/contenthelpers/IdentityKeyExtractor.hpp>
-#include <spider/contenthelpers/PairKeyExtractor.hpp>
-#include <spider/contenthelpers/ValueToKeyTypeMapper.hpp>
+#include <idx/contenthelpers/IdentityKeyExtractor.hpp>
+#include <idx/contenthelpers/PairKeyExtractor.hpp>
+#include <idx/contenthelpers/ValueToKeyTypeMapper.hpp>
 
-namespace spider { namespace contenthelpers {
+namespace idx { namespace contenthelpers {
 
 BOOST_AUTO_TEST_SUITE(ValueToKeyTypeMapperTest)
 
