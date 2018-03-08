@@ -5,6 +5,7 @@ include_directories(include)
 set(NAMESPACE idx/maphelpers/)
 set(HDR_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/${NAMESPACE})
 
+set(maphelpers-HEADERS ${maphelpers-HEADERS} ${HDR_DIRECTORY}/MapIteratorToOriginalValue.hpp)
 set(maphelpers-HEADERS ${maphelpers-HEADERS} ${HDR_DIRECTORY}/MapValueExtractor.hpp)
 set(maphelpers-HEADERS ${maphelpers-HEADERS} ${HDR_DIRECTORY}/STLLikeIndex.hpp)
 
