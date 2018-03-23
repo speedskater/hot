@@ -1,2 +1,2 @@
-ADD_SUBDIRECTORY(content-helpers-test)
-ADD_SUBDIRECTORY(map-helpers-test)
+ADD_SUBDIRECTORY(idx)
+ADD_SUBDIRECTORY(hot)
