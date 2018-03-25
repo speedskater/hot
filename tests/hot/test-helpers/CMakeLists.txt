@@ -13,7 +13,10 @@ include_directories(include)
 if(USEAVX2)
 
 set(test-helper-HEADERS ${test-helper-HEADERS} ${HDR_NAMESPACE}/PartialKeyMappingTestHelper.hpp)
+set(test-helper-HEADERS ${test-helper-HEADERS} ${HDR_NAMESPACE}/SampleTriples.hpp)
+
 set(test-helper-SOURCES ${test-helper-SOURCES} ${SRC_NAMESPACE}/PartialKeyMappingTestHelper.cpp)
+set(test-helper-SOURCES ${test-helper-SOURCES} ${SRC_NAMESPACE}/SampleTriples.cpp)
 endif()
 
 add_library(hot-test-helpers-lib ${test-helper-SOURCES} ${test-helper-HEADERS})

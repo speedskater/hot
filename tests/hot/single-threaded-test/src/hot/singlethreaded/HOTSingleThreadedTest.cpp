@@ -11,6 +11,7 @@
 #include <hot/singlethreaded/HOTSingleThreaded.hpp>
 
 #include <hot/testhelpers/PartialKeyMappingTestHelper.hpp>
+#include <hot/testhelpers/SampleTriples.hpp>
 
 #include <idx/contenthelpers/IdentityKeyExtractor.hpp>
 #include <idx/contenthelpers/PairPointerKeyExtractor.hpp>
@@ -376,7 +377,7 @@ BOOST_AUTO_TEST_CASE(testBoundsInteger) {
 }
 
 BOOST_AUTO_TEST_CASE(testTriples) {
-	std::vector<uint64_t> valuesToInsert = idx::utils::readDatFile("/data/rbinna/yago2/compressed/yago.triples.dat", 1000000);
+	std::vector<uint64_t> const & valuesToInsert = hot::testhelpers::getSampleTriples();
 	testValues(valuesToInsert);
 }
 

@@ -73,8 +73,8 @@ template<typename Benchmarkable> auto getThreadInfo(Benchmarkable & benchmarkabl
  *
  * It creates a commandline interface with the following behaviour:
  *
- * Usage: /home/rbinna/VCS/spiderstore/source/cpp/cmake-build-debug/apps/benchmarks/integer/hot-single-threaded-integer-benchmark/hot-single-threaded-integer-benchmark -insert=<insertType> [-insertModifier=<modifierType>] [-input=<insertFileName>] -size=<size> [-lookup=<lookupType>] [-lookupFile=<lookupFileName>] [-help] [-verbose=<true/false>] [-insertModifier=<true/false>]
- *	description: /home/rbinna/VCS/spiderstore/source/cpp/cmake-build-debug/apps/benchmarks/integer/hot-single-threaded-integer-benchmark/hot-single-threaded-integer-benchmark
+ * Usage: hot-single-threaded-integer-benchmark -insert=<insertType> [-insertModifier=<modifierType>] [-input=<insertFileName>] -size=<size> [-lookup=<lookupType>] [-lookupFile=<lookupFileName>] [-help] [-verbose=<true/false>] [-insertModifier=<true/false>]
+ *	description: hot-single-threaded-integer-benchmark/hot-single-threaded-integer-benchmark
  *		inserts <size> values of a given generator type (<insertType>) into the index structure
  *		After that lookup is executed with provided data. Either a modification of the input type or a separate data file
  *		The lookup is executed n times the size of the lookup data set, where n is the smallest natural number which results in at least 100 million lookup operations
