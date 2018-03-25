@@ -1,6 +1,4 @@
-[![Build Status][travis-badge]][travis-link]
-[![codecov][codecov-badge]][codecov-link]
-[![ISC License][license-badge]](LICENSE.md)
+[![Build Status](https://travis-ci.org/speedskater/hot.svg?branch=master)](https://travis-ci.org/speedskater/hot)
 
 # What is HOT
 HOT stands for Height Optimized Trie.
