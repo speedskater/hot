@@ -1,7 +1,6 @@
 //
 //  @author robert.binna@uibk.ac.at
 //
-#define BOOST_TEST_DYN_LINK
 
 #include <iostream>
 

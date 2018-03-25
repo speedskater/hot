@@ -80,7 +80,7 @@ template<unsigned int numberExtractionMasks> void checkRandomExtractionTypeSpeci
 
 template<typename ExtractionInformationType> void checkExtractionTypeSpecificConstraints(ExtractionInformationType const & extractionInformation);
 
-template<> void checkExtractionTypeSpecificConstraints(hot::commons::SingleMaskPartialKeyMapping const & extractionInformation) {
+template<> void checkExtractionTypeSpecificConstraints(hot::commons::SingleMaskPartialKeyMapping const &) {
 }
 
 template<> void checkExtractionTypeSpecificConstraints(hot::commons::MultiMaskPartialKeyMapping<1> const & extractionInformation) {
@@ -97,7 +97,8 @@ template<> void checkExtractionTypeSpecificConstraints(hot::commons::MultiMaskPa
 
 template<typename ExtractionInformationType> void checkExtractionInformationOnExpectedBits(ExtractionInformationType const & extractionInformation, std::set<uint16_t> const & expectedBits) {
 	std::array<uint8_t, 256> allBytesZero = getInitializedArray<256>(0u);
-	BOOST_REQUIRE_EQUAL(extractionInformation.extractMask(allBytesZero.data()), 0u);
+	uint32_t zeroMask = extractionInformation.extractMask(allBytesZero.data());
+	BOOST_REQUIRE_EQUAL(zeroMask, static_cast<uint32_t>(0u));
 
 	BOOST_REQUIRE_EQUAL(extractionInformation.calculateNumberBitsUsed(), expectedBits.size());
 

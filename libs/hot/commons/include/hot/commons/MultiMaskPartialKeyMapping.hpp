@@ -36,29 +36,39 @@ MultiMaskPartialKeyMapping<numberExtractionMasks>::setExtractionData(typename Mu
 	return SIMDHelperType::store(extractionData, mExtractionData);
 }
 
-template<> inline MultiMaskPartialKeyMapping<1u>::MultiMaskPartialKeyMapping(MultiMaskPartialKeyMapping<1u> const & src) {
+template<> inline MultiMaskPartialKeyMapping<1u>::MultiMaskPartialKeyMapping(MultiMaskPartialKeyMapping<1u> const & src)
+	: PartialKeyMappingBase()
+{
 	*reinterpret_cast<uint64_t*>(this) = *reinterpret_cast<uint64_t const *>(&src);
 	SIMDHelper<128>::store(SIMDHelper<128>::toRegister(&(src.mExtractionPositions)), &mExtractionPositions);
 }
 
-template<> inline MultiMaskPartialKeyMapping<2u>::MultiMaskPartialKeyMapping(MultiMaskPartialKeyMapping<2u> const & src) {
+template<> inline MultiMaskPartialKeyMapping<2u>::MultiMaskPartialKeyMapping(MultiMaskPartialKeyMapping<2u> const & src)
+	: PartialKeyMappingBase()
+{
 	*reinterpret_cast<uint64_t*>(this) = *reinterpret_cast<uint64_t const *>(&src);
 	SIMDHelper<256>::store(SIMDHelper<256>::toRegister(&(src.mExtractionPositions)), &mExtractionPositions);
 }
 
-template<> inline MultiMaskPartialKeyMapping<4u>::MultiMaskPartialKeyMapping(MultiMaskPartialKeyMapping<4u> const & src) {
+template<> inline MultiMaskPartialKeyMapping<4u>::MultiMaskPartialKeyMapping(MultiMaskPartialKeyMapping<4u> const & src)
+	: PartialKeyMappingBase()
+{
 	*reinterpret_cast<uint64_t*>(this) = *reinterpret_cast<uint64_t const *>(&src);
 	setPositions(src.getPositionsRegister());
 	setExtractionData(src.getExtractionDataRegister());
 }
 
-template<> inline MultiMaskPartialKeyMapping<4u>::MultiMaskPartialKeyMapping(MultiMaskPartialKeyMapping<2u> const & src) {
+template<> inline MultiMaskPartialKeyMapping<4u>::MultiMaskPartialKeyMapping(MultiMaskPartialKeyMapping<2u> const & src)
+	: PartialKeyMappingBase()
+{
 	*reinterpret_cast<uint64_t*>(this) = *reinterpret_cast<uint64_t const *>(&src);
 	setPositions(SIMDHelper<256u>::convertWithZeroExtend(src.getPositionsRegister()));
 	setExtractionData(SIMDHelper<256u>::convertWithZeroExtend(src.getExtractionDataRegister()));
 }
 
-template<> inline MultiMaskPartialKeyMapping<2u>::MultiMaskPartialKeyMapping(MultiMaskPartialKeyMapping<1u> const & src) {
+template<> inline MultiMaskPartialKeyMapping<2u>::MultiMaskPartialKeyMapping(MultiMaskPartialKeyMapping<1u> const & src)
+	: PartialKeyMappingBase()
+{
 	*reinterpret_cast<uint64_t*>(this) = *reinterpret_cast<uint64_t const *>(&src);
 	setPositions(SIMDHelper<128u>::convertWithZeroExtend(src.getPositionsRegister()));
 	setExtractionData(SIMDHelper<128u>::convertWithZeroExtend(src.getExtractionDataRegister()));
@@ -277,6 +287,7 @@ inline auto MultiMaskPartialKeyMapping<numberExtractionMasks>::extract(uint32_t 
 					mostSignificantBitPosition, leastSignificantBitPosition, numberBytesUsed, static_cast<uint16_t>(_mm_popcnt_u32(bitsUsed))
 				));
 			}
+      // fall through
 		default: //case 3+4
 			if(numberExtractionMasks >= 4) {
 				return operation(MultiMaskPartialKeyMapping<4u>(

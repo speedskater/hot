@@ -12,7 +12,7 @@
 namespace hot { namespace commons {
 
 constexpr uint16_t alignToNextHighestValueDivisableBy8(uint16_t size) {
-	return (size % 8 == 0) ? size : ((size & (~7)) + 8);
+	return static_cast<uint16_t>((size % 8 == 0) ? size : ((size & (~7)) + 8));
 }
 
 /**
@@ -46,7 +46,7 @@ constexpr uint16_t alignToNextHighestValueDivisableBy8(uint16_t size) {
  */
 template<typename PartialKeyType>
 struct alignas(8) SparsePartialKeys {
-	void *operator new(size_t baseSize, uint16_t const numberEntries);
+	void *operator new(size_t /* baseSize */, uint16_t const numberEntries);
 
 	void operator delete(void *);
 
@@ -237,12 +237,12 @@ public:
 
 private:
 	// Prevent heap allocation
-	void * operator new   (size_t);
-	void * operator new[] (size_t);
-	void operator delete[] (void*);
+	void * operator new   (size_t) = delete;
+	void * operator new[] (size_t) = delete;
+	void operator delete[] (void*) = delete;
 };
 
-template<typename PartialKeyType> void* SparsePartialKeys<PartialKeyType>::operator new (size_t baseSize, uint16_t const numberEntries) {
+template<typename PartialKeyType> void* SparsePartialKeys<PartialKeyType>::operator new (size_t /* baseSize */, uint16_t const numberEntries) {
 	assert(numberEntries >= 2);
 
 	constexpr size_t paddingElements = (32 - 8)/sizeof(PartialKeyType);

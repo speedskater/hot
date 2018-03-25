@@ -28,8 +28,6 @@ set(hot-commons-lib-HEADERS ${hot-commons-lib-HEADERS} ${HDR_NAMESPACE}/SingleMa
 set(hot-commons-lib-HEADERS ${hot-commons-lib-HEADERS} ${HDR_NAMESPACE}/SingleMaskPartialKeyMappingInterface.hpp)
 set(hot-commons-lib-HEADERS ${hot-commons-lib-HEADERS} ${HDR_NAMESPACE}/SIMDHelper.hpp)
 set(hot-commons-lib-HEADERS ${hot-commons-lib-HEADERS} ${HDR_NAMESPACE}/SparsePartialKeys.hpp)
-set(hot-commons-lib-HEADERS ${hot-commons-lib-HEADERS} ${HDR_NAMESPACE}/SparsePartialKeys256.hpp)
-set(hot-commons-lib-HEADERS ${hot-commons-lib-HEADERS} ${HDR_NAMESPACE}/UsedEntriesMask256.hpp)
 
 add_library(hot-commons-lib INTERFACE)
 target_sources(hot-commons-lib INTERFACE ${hot-commons-lib-HEADERS})

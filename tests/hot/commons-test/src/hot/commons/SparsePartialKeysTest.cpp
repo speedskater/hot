@@ -1,7 +1,6 @@
 //
 //  @author robert.binna@uibk.ac.at
 //
-#define BOOST_TEST_DYN_LINK
 
 #include <cstdlib>
 
@@ -19,7 +18,7 @@ constexpr uint32_t ALL_ENTRIES_USED_MASK = 0xFFFFFFFF;
 
 namespace hot { namespace commons {
 
-template<typename PartialKeyType> SparsePartialKeys<PartialKeyType>* const allocateMasks() {
+template<typename PartialKeyType> SparsePartialKeys<PartialKeyType>* allocateMasks() {
 	size_t rawSize = sizeof(PartialKeyType) * MAXIMUM_NUMBER_MASK_ENTRIES;
 
 	void* memoryForMasks = nullptr;

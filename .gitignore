@@ -1,2 +1,5 @@
 .idea
 cmake-build-*
+release-build
+coverageReport
+coverage-build

@@ -15,10 +15,6 @@
 
 #include <boost/hana.hpp>
 
-#ifdef USE_PAPI
-#include <papi.h>
-#include "idx/benchmark/PAPIHelper.hpp"
-#endif
 
 #ifdef USE_COUNTERS
 #include "PerfEvent.hpp"
@@ -60,6 +56,53 @@ template<typename Benchmarkable> auto getThreadInfo(Benchmarkable & benchmarkabl
 	)(benchmarkable);
 }
 
+/**
+ * A benchmark for index structures storing 64-bit integer keys.
+ *
+ * To benchmark an index structure it has to provide the following interface:
+ *   - bool insert(uint64_t key) (returns true, if the key was not previously contained)
+ *   - bool search([], uint64_t key) (returns true, if the key was actually contained)
+ *   - getStatistics (returns statistical information about the index benchmarked index structure. Memory consumption is mandatory, anything else is index structure specific and optional)
+ *
+ * The following methods are optional:
+ *   - bool remove(uint64_t key) (returns true, if the key to remove was previously contained)
+ *   - bool iterateAll(std::vector<uint64_t> expectedKeys) scans all entries and returns true, if the actually contained entries match the expected keys
+ *
+ * For concurrent index structures the class to benchmark must provide a threadinfo getThreadInformation which is passed as the first argument to each method.
+ * If the actual index does not require a special thread info object, for the sake of simplicity please provide a dummy wrapper parameter.
+ *
+ * It creates a commandline interface with the following behaviour:
+ *
+ * Usage: /home/rbinna/VCS/spiderstore/source/cpp/cmake-build-debug/apps/benchmarks/integer/hot-single-threaded-integer-benchmark/hot-single-threaded-integer-benchmark -insert=<insertType> [-insertModifier=<modifierType>] [-input=<insertFileName>] -size=<size> [-lookup=<lookupType>] [-lookupFile=<lookupFileName>] [-help] [-verbose=<true/false>] [-insertModifier=<true/false>]
+ *	description: /home/rbinna/VCS/spiderstore/source/cpp/cmake-build-debug/apps/benchmarks/integer/hot-single-threaded-integer-benchmark/hot-single-threaded-integer-benchmark
+ *		inserts <size> values of a given generator type (<insertType>) into the index structure
+ *		After that lookup is executed with provided data. Either a modification of the input type or a separate data file
+ *		The lookup is executed n times the size of the lookup data set, where n is the smallest natural number which results in at least 100 million lookup operations
+ *
+ *	switches:
+ *		-insert: specifies the distribution which will be used to insert data
+ *		-size: specifies the number of values to insert
+ *		-insertModifier: specifies the order to insert the values
+ *		-lookupModifier: specifies the order to lookup the values.
+ *		-input: specifies the file to read data from in case the insertType is file.
+ *			Each line of the file contains a single value.
+ *			The first line contains the total number of values in the file.
+ *		-help: show the usage dialog.
+ *		-insertOnly: specifies whether only the insert operation should be executed.
+ *		-threads: specifies the number of threads used for inserts as well as lookups.
+ *		-verbose: specifies to show debug messages.
+ *
+ *	potential parameter values:
+ *		<insertType>: is either dense/pseudorandom/random or file. In case of file the -insertFile parameter must be provided.
+ *		<modifierType>: is on of sequential/random/reverse and modifies the input data before it is inserted.
+ *		<lookupType>: is either a modifier ("sequential"/"random" or "reverse") on the input data which will be used to modify the input data before executing the lookup
+ *			or "file" which requires the additional parameter lookupFile specifying a file containing  the lookup data.
+ *			In case no lookup type is specified the same data which was used for insert is used for the lookup.
+ *		<insertFileName>: Only used in case the <modifierType> "file" is specified. It specifies the name of a dat file containing the input data.
+ *		<insertFileName>: Only used in case the <lookupType> "file" is specified. It specifies the name of a dat file containing the lookup data.
+ *
+ * @tparam Benchmarkable the class to benchmark
+ */
 template<class Benchmarkable> class Benchmark {
 	// Check if a type has a serialize method.
 	std::string mBinary;
@@ -71,7 +114,7 @@ template<class Benchmarkable> class Benchmark {
 
 public:
 	template<typename MyBenchmarkable, bool hasAdditionalConfigurationOptions> struct BenchmarkInstantiator {
-		static MyBenchmarkable getInstance(BenchmarkConfiguration const & configuration) {
+		static MyBenchmarkable getInstance(BenchmarkConfiguration const & /* configuration */) {
 			return MyBenchmarkable {};
 		}
 	};
@@ -121,19 +164,11 @@ public:
 
 
 	template<typename Function>
-	void benchmarkOperation(std::string const & operationName, std::vector<uint64_t> const & keys, size_t executedOperations, bool measureCacheMisses, Function functionToBenchmark) {
+	void benchmarkOperation(std::string const &operationName, std::vector<uint64_t> const &keys, size_t executedOperations,
+														Function functionToBenchmark) {
 		OperationResult result;
 
 		uint64_t numberKeys = keys.size();
-
-#ifdef USE_PAPI
-		int tlbEvents[4] = { PAPI_TLB_DM, PAPI_BR_MSP, PAPI_TOT_INS, PAPI_TOT_CYC };
-
-		executePapiOperation("start tlb counters", [&]() -> int {
-			return PAPI_start_counters(tlbEvents, 4);
-		});
-
-#endif
 
 		auto operationStart = std::chrono::system_clock::now().time_since_epoch();
 		bool worked = true;
@@ -152,40 +187,6 @@ public:
 		result.mCounterValues.insert(profileResults.begin(), profileResults.end());
 #endif
 
-#ifdef USE_PAPI
-		long long tlbCounterValues[4];
-		executePapiOperation("stop tlb counters", [&]() -> int {
-			return PAPI_stop_counters(tlbCounterValues,4);
-		});
-
-		result.mCounterValues["tlbMisses"] = tlbCounterValues[0];
-		result.mCounterValues["branchesMisspredicted"] = tlbCounterValues[1];
-		result.mCounterValues["numberInstructions"] = tlbCounterValues[2];
-		result.mCounterValues["numberCycles"] = tlbCounterValues[3];
-#endif
-
-#ifdef USE_PAPI
-
-		if(measureCacheMisses) {
-			int cacheEvents[3] = { PAPI_L1_TCM, PAPI_L2_TCM, PAPI_L3_TCM };
-
-			executePapiOperation("start cache counters", [&]() -> int {
-				return PAPI_start_counters(cacheEvents, 3);
-			});
-
-			worked = worked && functionToBenchmark(keys);
-
-			long long cacheCounterValues[3];
-			executePapiOperation("stop cache counters", [&]() -> int {
-				return PAPI_stop_counters(cacheCounterValues, 3);
-			});
-			result.mCounterValues["l1CacheMisses"] = cacheCounterValues[0];
-			result.mCounterValues["l2CacheMisses"] = cacheCounterValues[1];
-			result.mCounterValues["l3CacheMisses"] = cacheCounterValues[2];
-		}
-
-#endif
-
 		result.mNumberOps = executedOperations;
 		result.mDurationInNanos = std::chrono::duration_cast<std::chrono::nanoseconds>(operationEnd).count() - std::chrono::duration_cast<std::chrono::nanoseconds>(operationStart).count();
 		result.mNumberKeys = numberKeys;
@@ -193,7 +194,7 @@ public:
 		mBenchmarkResults.add(operationName, result);
 	}
 
-	bool insertRange(const tbb::blocked_range<size_t>& range, std::vector<uint64_t> & insertKeys) {
+	bool insertRange(const tbb::blocked_range<size_t>& range, std::vector<uint64_t> const & insertKeys) {
 		return boost::hana::if_(hasThreadInfo(mBenchmarkable),
 			[&](auto & benchmarkable) {
 				bool allInserted = true;
@@ -246,120 +247,131 @@ public:
 			multithreadedArena.terminate();
 		}
 
-		benchmarkOperation("insert", insertKeys, insertKeys.size(), false, [&, this] (std::vector<uint64_t> const & keys) {
-			bool isMultiThreaded = boost::hana::if_(hasThreadInfo(mBenchmarkable),
-				[](auto & benchmarkable) { return true; },
-				[](auto & benchmarkable) { return false; }
-			)(mBenchmarkable);
+		benchmarkOperation("insert", insertKeys, insertKeys.size(), [&, this](std::vector<uint64_t> const &keys) {
+				bool isMultiThreaded = boost::hana::if_(hasThreadInfo(mBenchmarkable),
+																								[](auto & /* benchmarkable */) { return true; },
+																								[](auto & /* benchmarkable */) { return false; }
+				)(mBenchmarkable);
 
 
-			size_t totalNumberValuesToInsert = insertKeys.size();
-			std::atomic<bool> allThreadSucceeded { true };
+				size_t totalNumberValuesToInsert = keys.size();
+				std::atomic<bool> allThreadSucceeded{true};
 
-			if(isMultiThreaded) {
-				tbb::task_group insertGroup;
-				multithreadedArena.execute([&]{
-					insertGroup.run([&]{ // run in task group
-						tbb::parallel_for(tbb::blocked_range<size_t>( 0,  totalNumberValuesToInsert, 10000), [&](const tbb::blocked_range<size_t>& range) {
-							bool allInserted = insertRange(range, insertKeys);
-							if(!allInserted) {
-								allThreadSucceeded.store(false, std::memory_order_release);
-							}
-						});
+				if (isMultiThreaded) {
+					tbb::task_group insertGroup;
+					multithreadedArena.execute([&] {
+							insertGroup.run([&] { // run in task group
+									tbb::parallel_for(tbb::blocked_range<size_t>(0, totalNumberValuesToInsert, 10000),
+																		[&](const tbb::blocked_range<size_t> &range) {
+																				bool allInserted = insertRange(range, keys);
+																				if (!allInserted) {
+																					allThreadSucceeded.store(false, std::memory_order_release);
+																				}
+																		});
+							});
 					});
-				});
-				insertGroup.wait();
-			} else {
-				allThreadSucceeded.store(
-					insertRange(tbb::blocked_range<size_t>( 0,  totalNumberValuesToInsert, totalNumberValuesToInsert), insertKeys),
-					std::memory_order_release
-				);
-			}
+					insertGroup.wait();
+				} else {
+					allThreadSucceeded.store(
+						insertRange(tbb::blocked_range<size_t>(0, totalNumberValuesToInsert, totalNumberValuesToInsert), keys),
+						std::memory_order_release
+					);
+				}
 
-			return allThreadSucceeded.load(std::memory_order_acquire) & boost::hana::if_(hasPostInsertOperation(mBenchmarkable),
-				[](auto & benchmarkable) { return benchmarkable.postInsertOperation(); },
-				[](auto & benchmarkable) { return true; }
-			)(mBenchmarkable);
-		});
-		mBenchmarkResults.setIndexStatistics(mBenchmarkable.getMemoryConsumption());
+				return allThreadSucceeded.load(std::memory_order_acquire) &
+							 boost::hana::if_(hasPostInsertOperation(mBenchmarkable),
+																[](auto &benchmarkable) { return benchmarkable.postInsertOperation(); },
+																[](auto & /* benchmarkable */ ) { return true; }
+							 )(mBenchmarkable);
+				});
+		mBenchmarkResults.setIndexStatistics(mBenchmarkable.getStatistics());
 
 		//std::cout << "Insert Finished" << std::endl;
 		if(!mBenchmarkConfiguration.isInsertOnly()) {
 			std::vector<uint64_t> const &lookupKeys = mBenchmarkConfiguration.getLookupValues();
 			size_t totalNumberLookups = 100'000'000;
 
-			benchmarkOperation("lookup", lookupKeys, totalNumberLookups, true, [&](std::vector<uint64_t> const &keys) {
-				size_t totalNumberKeys = lookupKeys.size();
+			benchmarkOperation("lookup", lookupKeys, totalNumberLookups, [&](std::vector<uint64_t> const &keys) {
+					size_t totalNumberKeys = lookupKeys.size();
 
-				std::atomic<bool> allThreadSucceeded { true };
+					std::atomic<bool> allThreadSucceeded{true};
 
-				if(mBenchmarkConfiguration.mNumberThreads > 1) {
-					tbb::task_group lookupGroup;
-					multithreadedArena.execute([&]{
-						lookupGroup.run([&]{ // run in task group
-							tbb::parallel_for(tbb::blocked_range<size_t>( 0,  totalNumberLookups, 10000), [&](const tbb::blocked_range<size_t>& range) {
-								bool allLookedUp = boost::hana::if_(hasThreadInfo(mBenchmarkable),
-									[&](auto & benchmarkable) {
-										bool allLookedUp = true;
-										size_t index = range.begin();
-										decltype(benchmarkable.getThreadInformation()) threadInfo = benchmarkable.getThreadInformation();
-										for(size_t i = index; i < range.end(); ++i  ) {
-											index = index < totalNumberKeys ? index : index % totalNumberKeys;
-											allLookedUp &= benchmarkable.search(threadInfo, lookupKeys[index]);
-											++index;
-										}
-										return allLookedUp;
-									},
-									[&](auto & benchmarkable) {
-										bool allLookedUp = true;
-										size_t index = range.begin();
-										for(size_t i = index; i < range.end(); ++i  ) {
-											index = index < totalNumberKeys ? index : index % totalNumberKeys;
-											allLookedUp &= benchmarkable.search(lookupKeys[index]);
-											++index;
-										}
-										return allLookedUp;
-									}
-								)(mBenchmarkable);
+					if (mBenchmarkConfiguration.mNumberThreads > 1) {
+						tbb::task_group lookupGroup;
+						multithreadedArena.execute([&] {
+								lookupGroup.run([&] { // run in task group
+										tbb::parallel_for(tbb::blocked_range<size_t>(0, totalNumberLookups, 10000),
+																			[&](const tbb::blocked_range<size_t> &range) {
+																					bool allLookedUp = boost::hana::if_(hasThreadInfo(mBenchmarkable),
+																																							[&](auto &benchmarkable) {
+																																									bool allLookedUp = true;
+																																									size_t index = range.begin();
+																																									decltype(benchmarkable.getThreadInformation()) threadInfo = benchmarkable.getThreadInformation();
+																																									for (size_t i = index;
+																																											 i < range.end(); ++i) {
+																																										index =
+																																											index < totalNumberKeys ? index :
+																																											index % totalNumberKeys;
+																																										allLookedUp &= benchmarkable.search(
+																																											threadInfo, keys[index]);
+																																										++index;
+																																									}
+																																									return allLookedUp;
+																																							},
+																																							[&](auto &benchmarkable) {
+																																									bool allLookedUp = true;
+																																									size_t index = range.begin();
+																																									for (size_t i = index;
+																																											 i < range.end(); ++i) {
+																																										index =
+																																											index < totalNumberKeys ? index :
+																																											index % totalNumberKeys;
+																																										allLookedUp &= benchmarkable.search(
+																																											keys[index]);
+																																										++index;
+																																									}
+																																									return allLookedUp;
+																																							}
+																					)(mBenchmarkable);
 
 
-								if(!allLookedUp) {
-									allThreadSucceeded.store(false, std::memory_order_release);
-								}
-							});
+																					if (!allLookedUp) {
+																						allThreadSucceeded.store(false, std::memory_order_release);
+																					}
+																			});
+								});
 						});
-					});
 
-					lookupGroup.wait();
+						lookupGroup.wait();
 
-					return allThreadSucceeded.load(std::memory_order_acquire);
-				} else {
-					return boost::hana::if_(hasThreadInfo(mBenchmarkable),
-						[&](auto & benchmarkable) {
-							bool allLookedUp = true;
-							decltype(benchmarkable.getThreadInformation()) threadInfo = benchmarkable.getThreadInformation();
-							size_t index = 0;
-							for(size_t i = 0; i < totalNumberLookups; ++i  ) {
-								index = index < totalNumberKeys ? index : 0;
-								allLookedUp &= mBenchmarkable.search(threadInfo, lookupKeys[index]);
-								++index;
-							}
-							return allLookedUp;
+						return allThreadSucceeded.load(std::memory_order_acquire);
+					} else {
+						return boost::hana::if_(hasThreadInfo(mBenchmarkable),
+																		[&](auto &benchmarkable) {
+																				bool allLookedUp = true;
+																				decltype(benchmarkable.getThreadInformation()) threadInfo = benchmarkable.getThreadInformation();
+																				size_t index = 0;
+																				for (size_t i = 0; i < totalNumberLookups; ++i) {
+																					index = index < totalNumberKeys ? index : 0;
+																					allLookedUp &= benchmarkable.search(threadInfo, lookupKeys[index]);
+																					++index;
+																				}
+																				return allLookedUp;
 
-						},
-						[&](auto & benchmarkable) {
-							bool allLookedUp = true;
-							size_t index = 0;
-							for(size_t i = 0; i < totalNumberLookups; ++i  ) {
-								index = index < totalNumberKeys ? index : 0;
-								allLookedUp &= mBenchmarkable.search(lookupKeys[index]);
-								++index;
-							}
-							return allLookedUp;
-						}
-					)(mBenchmarkable);
-				}
-			});
+																		},
+																		[&](auto &benchmarkable) {
+																				bool allLookedUp = true;
+																				size_t index = 0;
+																				for (size_t i = 0; i < totalNumberLookups; ++i) {
+																					index = index < totalNumberKeys ? index : 0;
+																					allLookedUp &= benchmarkable.search(lookupKeys[index]);
+																					++index;
+																				}
+																				return allLookedUp;
+																		}
+						)(mBenchmarkable);
+					}
+						});
 		}
 		if(!mBenchmarkConfiguration.isInsertOnly()) {
 			boost::hana::if_(hasIterateAllFunctionality(mBenchmarkable),
@@ -371,112 +383,119 @@ public:
 					size_t totalNumberScanOps = repeatsPerThread * numberThreads * sortedKeys.size();
 
 					if(mBenchmarkConfiguration.mNumberThreads > 1) {
-						this->benchmarkOperation("iterate-all", sortedKeys, totalNumberScanOps, true, [&](std::vector<uint64_t> const &keys) {
-							std::atomic<bool> allThreadSucceeded { true };
+						this->benchmarkOperation("iterate-all", sortedKeys, totalNumberScanOps,
+																		 [&](std::vector<uint64_t> const &keys) {
+																				 std::atomic<bool> allThreadSucceeded{true};
 
-							tbb::task_group scanGroup;
-							multithreadedArena.execute([&] {
-							scanGroup.run([&] { // run in task group
-									tbb::parallel_for(tbb::blocked_range<size_t>( 0,  repeatsPerThread * numberThreads, 1), [&](const tbb::blocked_range<size_t>& range) {
-										bool scannedSuccessfully = boost::hana::if_(hasThreadInfo(mBenchmarkable),
-											[&](auto & benchmarkable) {
-												bool allScannedSuccesfully = true;
-												decltype(benchmarkable.getThreadInformation()) threadInfo = benchmarkable.getThreadInformation();
-												for(size_t i = range.begin(); i < range.end(); ++i) {
-													allScannedSuccesfully &= benchmarkable.iterateAll(threadInfo, keys);
-												}
-												return allScannedSuccesfully;
-											},
-											[&](auto & benchmarkable) {
-												bool allScannedSuccesfully = true;
-												for(size_t i = range.begin(); i < range.end(); ++i) {
-													allScannedSuccesfully &= benchmarkable.iterateAll(keys);
-												}
-												return allScannedSuccesfully;
-											}
-										)(mBenchmarkable);
+																				 tbb::task_group scanGroup;
+																				 multithreadedArena.execute([&] {
+																						 scanGroup.run([&] { // run in task group
+																								 tbb::parallel_for(
+																									 tbb::blocked_range<size_t>(0, repeatsPerThread * numberThreads, 1),
+																									 [&](const tbb::blocked_range<size_t> &range) {
+																											 bool scannedSuccessfully = boost::hana::if_(
+																												 hasThreadInfo(benchmarkable),
+																												 [&](auto &benchmarkable) {
+																														 bool allScannedSuccesfully = true;
+																														 decltype(benchmarkable.getThreadInformation()) threadInfo = benchmarkable.getThreadInformation();
+																														 for (size_t i = range.begin(); i < range.end(); ++i) {
+																															 allScannedSuccesfully &= benchmarkable.iterateAll(
+																																 threadInfo, keys);
+																														 }
+																														 return allScannedSuccesfully;
+																												 },
+																												 [&](auto &benchmarkable) {
+																														 bool allScannedSuccesfully = true;
+																														 for (size_t i = range.begin(); i < range.end(); ++i) {
+																															 allScannedSuccesfully &= benchmarkable.iterateAll(keys);
+																														 }
+																														 return allScannedSuccesfully;
+																												 }
+																											 )(benchmarkable);
 
-										if(!scannedSuccessfully) {
-											allThreadSucceeded.store(false, std::memory_order_release);
-										}
-									});
-								});
-							});
-							scanGroup.wait();
+																											 if (!scannedSuccessfully) {
+																												 allThreadSucceeded.store(false, std::memory_order_release);
+																											 }
+																									 });
+																						 });
+																				 });
+																				 scanGroup.wait();
 
-							return allThreadSucceeded.load(std::memory_order_acquire);
-						});
+																				 return allThreadSucceeded.load(std::memory_order_acquire);
+																		 });
 					} else {
-						this->benchmarkOperation("iterate-all", sortedKeys, totalNumberScanOps, true, [&](std::vector<uint64_t> const &keys) {
-							return boost::hana::if_(hasThreadInfo(mBenchmarkable),
-								[&](auto & benchmarkable) {
-									bool allScannedSuccesfully = true;
-									decltype(benchmarkable.getThreadInformation()) threadInfo = benchmarkable.getThreadInformation();
-									for(size_t i = 0; i < repeatsPerThread; ++i) {
-										allScannedSuccesfully &= benchmarkable.iterateAll(threadInfo, keys);
-									}
-									return allScannedSuccesfully;
-								},
-								[&](auto & benchmarkable) {
-									bool allScannedSuccesfully = true;
-									for(size_t i = 0; i < repeatsPerThread; ++i) {
-										allScannedSuccesfully &= benchmarkable.iterateAll(keys);
-									}
-									return allScannedSuccesfully;
-								}
-							)(mBenchmarkable);
-						});
+						this->benchmarkOperation("iterate-all", sortedKeys, totalNumberScanOps,
+																		 [&](std::vector<uint64_t> const &keys) {
+																				 return boost::hana::if_(hasThreadInfo(mBenchmarkable),
+																																 [&](auto &benchmarkable) {
+																																		 bool allScannedSuccesfully = true;
+																																		 decltype(benchmarkable.getThreadInformation()) threadInfo = benchmarkable.getThreadInformation();
+																																		 for (size_t i = 0; i < repeatsPerThread; ++i) {
+																																			 allScannedSuccesfully &= benchmarkable.iterateAll(
+																																				 threadInfo, keys);
+																																		 }
+																																		 return allScannedSuccesfully;
+																																 },
+																																 [&](auto &benchmarkable) {
+																																		 bool allScannedSuccesfully = true;
+																																		 for (size_t i = 0; i < repeatsPerThread; ++i) {
+																																			 allScannedSuccesfully &= benchmarkable.iterateAll(
+																																				 keys);
+																																		 }
+																																		 return allScannedSuccesfully;
+																																 }
+																				 )(benchmarkable);
+																		 });
 					}
 				},
-				[&](auto && benchmarkable) -> void{ }
+				[&](auto && /* benchmarkable */) -> void{ }
 			)(mBenchmarkable);
 		}
 
 		boost::hana::if_(hasDeletionFunctionality(mBenchmarkable),
 			 [&,this](auto && benchmarkable) -> void {
-					 benchmarkOperation("delete", insertKeys, insertKeys.size(), false,
-								[&, this](std::vector<uint64_t> const &keys) {
-										bool isMultiThreaded = boost::hana::if_(hasThreadInfo(mBenchmarkable),
-																														[](
-																															auto &benchmarkable) { return true; },
-																														[](
-																															auto &benchmarkable) { return false; }
-										)(mBenchmarkable);
+					 benchmarkOperation("delete", insertKeys, insertKeys.size(), [&, this](std::vector<uint64_t> const &keys) {
+							 bool isMultiThreaded = boost::hana::if_(hasThreadInfo(benchmarkable),
+																											 [](
+																												 auto & /*benchmarkable*/) { return true; },
+																											 [](
+																												 auto & /*benchmarkable*/) { return false; }
+							 )(benchmarkable);
 
 
-										size_t totalNumberValuesToDelete = keys.size();
-										std::atomic<bool> allThreadSucceeded{true};
+							 size_t totalNumberValuesToDelete = keys.size();
+							 std::atomic<bool> allThreadSucceeded{true};
 
-										if (isMultiThreaded) {
-											tbb::task_group insertGroup;
-											multithreadedArena.execute([&] {
-													insertGroup.run([&] { // run in task group
-															tbb::parallel_for(
-																tbb::blocked_range<size_t>(0, totalNumberValuesToDelete,
-																													 10000),
-																[&](const tbb::blocked_range<size_t> &range) {
-																		bool allInserted = deleteEntriesInRange(range, keys);
-																		if (!allInserted) {
-																			allThreadSucceeded.store(false,
-																															 std::memory_order_release);
-																		}
-																});
-													});
-											});
-											insertGroup.wait();
-										} else {
-											allThreadSucceeded.store(
-												deleteEntriesInRange(
-													tbb::blocked_range<size_t>(0, totalNumberValuesToDelete,
-																										 totalNumberValuesToDelete), keys),
-												std::memory_order_release
-											);
-										}
+							 if (isMultiThreaded) {
+								 tbb::task_group insertGroup;
+								 multithreadedArena.execute([&] {
+										 insertGroup.run([&] { // run in task group
+												 tbb::parallel_for(
+													 tbb::blocked_range<size_t>(0, totalNumberValuesToDelete,
+																											10000),
+													 [&](const tbb::blocked_range<size_t> &range) {
+															 bool allInserted = deleteEntriesInRange(range, keys);
+															 if (!allInserted) {
+																 allThreadSucceeded.store(false,
+																													std::memory_order_release);
+															 }
+													 });
+										 });
+								 });
+								 insertGroup.wait();
+							 } else {
+								 allThreadSucceeded.store(
+									 deleteEntriesInRange(
+										 tbb::blocked_range<size_t>(0, totalNumberValuesToDelete,
+																								totalNumberValuesToDelete), keys),
+									 std::memory_order_release
+								 );
+							 }
 
-										return allThreadSucceeded.load(std::memory_order_acquire);
-								});
+							 return allThreadSucceeded.load(std::memory_order_acquire);
+					 });
 			 },
-			[&](auto && benchmarkable) -> void{ }
+			[&](auto && /* benchmarkable */) -> void{ }
 		)(mBenchmarkable);
 
 		writeYAML(std::cout);

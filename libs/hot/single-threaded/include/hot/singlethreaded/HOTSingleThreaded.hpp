@@ -133,7 +133,7 @@ template<typename ValueType, template <typename> typename KeyExtractor> inline b
 template<typename ValueType,  template <typename> typename KeyExtractor>
 void
 HOTSingleThreaded<ValueType, KeyExtractor>::removeWithStack(std::array<HOTSingleThreadedInsertStackEntry, 64> const &searchStack, unsigned int currentDepth) {
-	removeAndExecuteOperationOnNewNodeBeforeIntegrationIntoTreeStructure(searchStack, currentDepth, determineDeletionInformation(searchStack, currentDepth), [](HOTSingleThreadedChildPointer const & newNode, size_t offset){
+	removeAndExecuteOperationOnNewNodeBeforeIntegrationIntoTreeStructure(searchStack, currentDepth, determineDeletionInformation(searchStack, currentDepth), [](HOTSingleThreadedChildPointer const & newNode, size_t /* offset */){
 		return newNode;
 	});
 }

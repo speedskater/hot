@@ -67,7 +67,7 @@ template<> struct ToDiscriminativeBitsRepresentation<hot::commons::MultiMaskPart
 	using Type = hot::commons::MultiMaskPartialKeyMapping<4>;
 };
 
-template<typename DiscriminativeBitsRepresentation, typename PartialKeyType> void* HOTSingleThreadedNode<DiscriminativeBitsRepresentation, PartialKeyType>::operator new (size_t baseSize, uint16_t const numberEntries) {
+template<typename DiscriminativeBitsRepresentation, typename PartialKeyType> void* HOTSingleThreadedNode<DiscriminativeBitsRepresentation, PartialKeyType>::operator new (size_t /* baseSize */, uint16_t const numberEntries) {
 	hot::commons::NodeAllocationInformation const & allocationInformation = hot::commons::NodeAllocationInformations<HOTSingleThreadedNode<DiscriminativeBitsRepresentation, PartialKeyType>>::getAllocationInformation(numberEntries);
 
 	//at least two entries must be contained in the node

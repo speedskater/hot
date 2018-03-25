@@ -64,7 +64,7 @@ template<> struct ToDiscriminativeBitsRepresentation<hot::commons::MultiMaskPart
 	using Type = hot::commons::MultiMaskPartialKeyMapping<4>;
 };
 
-template<typename DiscriminativeBitsRepresentation, typename PartialKeyType>  void* HOTRowexNode<DiscriminativeBitsRepresentation, PartialKeyType>::operator new (size_t baseSize, uint16_t const numberEntries) {
+template<typename DiscriminativeBitsRepresentation, typename PartialKeyType>  void* HOTRowexNode<DiscriminativeBitsRepresentation, PartialKeyType>::operator new (size_t , uint16_t const numberEntries) {
 	hot::commons::NodeAllocationInformation const & allocationInformation = hot::commons::NodeAllocationInformations<HOTRowexNode<DiscriminativeBitsRepresentation, PartialKeyType>>::getAllocationInformation(numberEntries);
 	assert(numberEntries >= 2);
 

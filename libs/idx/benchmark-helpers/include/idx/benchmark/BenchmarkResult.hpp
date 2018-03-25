@@ -50,7 +50,7 @@ template<typename T> void writeToYAMLObject(std::map<std::string, T> map, std::o
 }
 
 
-template<typename T> void writeToYAMLObject(std::map<std::string, T> map, std::ostream & output, const size_t depth, SwitchingParam<true> theSwitcher)
+template<typename T> void writeToYAMLObject(std::map<std::string, T> map, std::ostream & output, const size_t depth, SwitchingParam<true> /* theSwitcher */)
 {
 	std::string l0(depth * 2, ' ');
 
@@ -60,7 +60,7 @@ template<typename T> void writeToYAMLObject(std::map<std::string, T> map, std::o
 	}
 }
 
-template<typename T, typename SwitchToFundamental> void writeToYAMLGeneric(std::map<std::string, T> map, std::ostream & output, const size_t depth, SwitchToFundamental theSwitcher) {
+template<typename T, typename SwitchToFundamental> void writeToYAMLGeneric(std::map<std::string, T> map, std::ostream & output, const size_t depth, SwitchToFundamental /* theSwitcher */) {
 	constexpr bool hasWriteYAML = Detect_writeYAML<T>::value;
 
 	writeToYAMLObject(map, output, depth, SwitchingParam<hasWriteYAML> {});
@@ -68,7 +68,7 @@ template<typename T, typename SwitchToFundamental> void writeToYAMLGeneric(std::
 }
 
 
-template<typename T> void writeToYAMLGeneric(std::map<std::string, T> map, std::ostream & output, const size_t depth, SwitchingParam<true> theSwitcher) {
+template<typename T> void writeToYAMLGeneric(std::map<std::string, T> map, std::ostream & output, const size_t depth, SwitchingParam<true> /* theSwitcher */) {
 	std::string l0(depth * 2, ' ');
 
 	for(std::pair<std::string, T> const & information : map) {
@@ -145,7 +145,11 @@ struct OperationResult {
 	}
 };
 
-
+/**
+ * Helper object to collect statistics about the used index structure.
+ * The total amount of memory required by the index structure is mandatory, all other collected statistics are
+ * purely optional and dependent on the actual index structure
+ */
 struct IndexStatistics {
 	size_t total;
 	std::map<std::string, double> additionalInformation;

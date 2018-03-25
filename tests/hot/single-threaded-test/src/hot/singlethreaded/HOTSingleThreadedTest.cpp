@@ -2,7 +2,6 @@
 //  Created by Robert Binna on 23.12.14.
 //
 //
-#define BOOST_TEST_DYN_LINK
 
 #include <bitset>
 #include <set>
@@ -23,7 +22,7 @@
 
 namespace hot { namespace singlethreaded {
 
-using Uint64SimdCobIncrementalTrie = hot::singlethreaded::HOTSingleThreaded<uint64_t, idx::contenthelpers::IdentityKeyExtractor>;
+using HOTSingleThreadedUint64 = hot::singlethreaded::HOTSingleThreaded<uint64_t, idx::contenthelpers::IdentityKeyExtractor>;
 using CStringTrieType = hot::singlethreaded::HOTSingleThreaded<const char*, idx::contenthelpers::IdentityKeyExtractor>;
 
 inline bool isPartitionCorrect(HOTSingleThreadedChildPointer const * childPointer) {
@@ -115,103 +114,26 @@ template<typename ValueType, template <typename> typename KeyExtractor> inline b
 
 template<typename ValueType>
 std::shared_ptr<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>> insertWithoutCheck(std::vector<ValueType> const &valuesToInsert) {
-	std::shared_ptr<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>> cobTrie = std::make_shared<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>>();
+	std::shared_ptr<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>> hotSingleThreaded = std::make_shared<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>>();
 	for (size_t i = 0u; i < valuesToInsert.size(); ++i) {
-		cobTrie->insert(valuesToInsert[i]);
+		hotSingleThreaded->insert(valuesToInsert[i]);
 	}
 
-	return cobTrie;
-	//std::cout << "Checked Integrity" << std::endl;
+	return hotSingleThreaded;
 }
 
 template<typename ValueType>
 std::shared_ptr<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>> testValues(std::vector<ValueType> const &valuesToInsert, int expectedLevel=-1) {
-	std::shared_ptr<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>> cobTrie = std::make_shared<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>>();
+	std::shared_ptr<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>> hotSingleThreaded = std::make_shared<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>>();
 	using KeyType = typename hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>::KeyType;
 
-	//std::cout << "Starting insert" << std::endl;
 	for (size_t i = 0u; i < valuesToInsert.size(); ++i) {
 		KeyType key = valuesToInsert[i];
-		//int failingValue = -1;
-		//int failingValue = 24614;
-		//int failingValue = 30;
 
-		/*if(i == failingValue) {
-			typename KeyHelper::KeyType failingRawValue = KeyHelper::extract(valuesToInsert[failingValue]);
-			std::cout << "vorher" << std::endl;
-
-			hot::singlethreaded::HOTSingleThreadedChildPointer previousNodePointer = cobTrie.getNodeAtPath({ });
-			hot::singlethreaded::SuccessiveSIMDCobTrieNode<uint8_t> const *previousNode
-				= (const hot::singlethreaded::SuccessiveSIMDCobTrieNode<uint8_t> *) previousNodePointer.getNode();
-			uint8_t usedSearchMask = previousNode->extractBytes(failingRawValue.data());
-			std::cout << "Search Mask for failing vlaue :: ";
-			std::bitset<sizeof(usedSearchMask) * 8> usedSearchMaskBits(usedSearchMask);
-			std::cout << usedSearchMaskBits << " with mapping ";
-			hot::singlethreaded::printMaskWithMapping(usedSearchMask, previousNode->getExtractionMaskToEntriesMasksMapping());
-			std::cout << std::endl;
-			printUint64NodeChildPointer(previousNodePointer);
-
-			//Print node for path 1/0/16/20 cobTrie befor and after insert
-			std::cout << "inserting failingValue " << valuesToInsert[failingValue] << std::endl;
-		}*/
 		if(i == (valuesToInsert.size() - 1)) {
-			BOOST_REQUIRE_MESSAGE(cobTrie->find(key) == cobTrie->end(), "element has not been inserted yet, hence it must no be contained in the trie");
+			BOOST_REQUIRE_MESSAGE(hotSingleThreaded->find(key) == hotSingleThreaded->end(), "element has not been inserted yet, hence it must no be contained in the trie");
 		}
-		cobTrie->insert(valuesToInsert[i]);
-
-		/*if(i == 4881 || i == 4882) {
-			std::cout << "i :: " << i << std::endl;
-			std::set<typename KeyHelper::ValueType, typename KeyHelper::Comparator> temporarySet(valuesToInsert.begin(),
-																								 valuesToInsert.begin() +
-																								 i + 1);
-			std::vector<typename KeyHelper::ValueType> sortedValues(temporarySet.begin(), temporarySet.end());
-
-			for (typename KeyHelper::ValueType insertedValue : sortedValues) {
-				typename KeyHelper::KeyType rawSearchValue = KeyHelper::extract(insertedValue);
-				typename KeyHelper::ValueType foundValue = KeyHelper::extractValue(cobTrie.lookup(rawSearchValue.data()));
-				BOOST_REQUIRE_EQUAL(foundValue, insertedValue);
-			}
-		}*/
-
-		/*if(i == failingValue) {
-			typename Uint64KeyHelper::KeyType failingRawValue = Uint64KeyHelper::extract(valuesToInsert[failingValue]);
-			std::cout << "nachher" << std::endl;
-			hot::singlethreaded::HOTSingleThreadedChildPointer newNodePointer = cobTrie.getNodeAtPath({ });
-			hot::singlethreaded::SuccessiveSIMDCobTrieNode<uint8_t> const *newNode
-				= (const hot::singlethreaded::SuccessiveSIMDCobTrieNode<uint8_t> *) newNodePointer.getNode();
-			uint8_t usedSearchMask = newNode->extractBytes(failingRawValue.data());
-			std::cout << "Search Mask for failing vlaue :: ";
-			std::bitset<sizeof(usedSearchMask) * 8> usedSearchMaskBits(usedSearchMask);
-			std::cout << usedSearchMaskBits << " with mapping ";
-			hot::singlethreaded::printMaskWithMapping(usedSearchMask, newNode->getExtractionMaskToEntriesMasksMapping());
-			std::cout << std::endl;
-
-			printUint64NodeChildPointer(newNodePointer);
-			std::cout << "printed node" << std::endl;
-			sleep(5);
-			//Print node for path 1/0/16/20 cobTrie befor and after insert
-		}*/
-
-		/*if(i == failingValue) {
-			std::cout << "i :: " << i << "searching values" << std::endl;
-			for (int j = 0; j <= i; ++j) {
-				typename Uint64KeyHelper::KeyType rawSearchValue = Uint64KeyHelper::extract(valuesToInsert[j]);
-				uint64_t foundValue = Uint64KeyHelper::extractValue(cobTrie.lookup(rawSearchValue.data()));
-				//BOOST_REQUIRE_EQUAL(foundValue, valuesToInsert[j]);
-				found = found && foundValue == valuesToInsert[j];
-				if (!found) {
-					std::cout << "j :: " << j << " => " << found << std::endl;
-				}
-				BOOST_REQUIRE(found);
-			}
-
-			std::cout << "Starting to check integrity" << std::endl;
-			BOOST_REQUIRE(cobTrie.mRoot.isSubTreeValid<Uint64KeyHelper>());
-			std::cout << "Checked Integrity" << std::endl;
-
-			BOOST_REQUIRE(found);
-		}*/
-
+		hotSingleThreaded->insert(valuesToInsert[i]);
 	}
 
 	bool found = true;
@@ -224,7 +146,7 @@ std::shared_ptr<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthe
 	size_t numberValues = sortedValues.size();
 
 	for (size_t j = 0u; j < numberValues; ++j) {
-		idx::contenthelpers::OptionalValue<ValueType> result = cobTrie->lookup(sortedValues[j]);
+		idx::contenthelpers::OptionalValue<ValueType> result = hotSingleThreaded->lookup(sortedValues[j]);
 
 		found = found && result.mIsValid && (result.mValue == sortedValues[j]);
 		if (!found) {
@@ -236,37 +158,32 @@ std::shared_ptr<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthe
 		for (size_t j = 0u; j < numberValues; ++j) {
 			KeyType rawSearchValue = sortedValues[j];
 
-			BOOST_REQUIRE_EQUAL_COLLECTIONS(cobTrie->find(rawSearchValue), cobTrie->end(), sortedValues.begin() + j, sortedValues.end());
-			BOOST_REQUIRE_EQUAL_COLLECTIONS(cobTrie->lower_bound(rawSearchValue), cobTrie->end(), sortedValues.begin() + j, sortedValues.end());
-			BOOST_REQUIRE_EQUAL_COLLECTIONS(cobTrie->upper_bound(rawSearchValue), cobTrie->end(), sortedValues.begin() + j + 1, sortedValues.end());
-			BOOST_REQUIRE(cobTrie->scan(rawSearchValue, numberValues - j - 1).compliesWith({ true, *sortedValues.rbegin() }));
+			BOOST_REQUIRE_EQUAL_COLLECTIONS(hotSingleThreaded->find(rawSearchValue), hotSingleThreaded->end(), sortedValues.begin() + j, sortedValues.end());
+			BOOST_REQUIRE_EQUAL_COLLECTIONS(hotSingleThreaded->lower_bound(rawSearchValue), hotSingleThreaded->end(), sortedValues.begin() + j, sortedValues.end());
+			BOOST_REQUIRE_EQUAL_COLLECTIONS(hotSingleThreaded->upper_bound(rawSearchValue), hotSingleThreaded->end(), sortedValues.begin() + j + 1, sortedValues.end());
+			BOOST_REQUIRE(hotSingleThreaded->scan(rawSearchValue, numberValues - j - 1).compliesWith({ true, *sortedValues.rbegin() }));
 		}
 	} else {
 		for (size_t j = 0u; j < numberValues; j+=(numberValues/100)) {
 			KeyType rawSearchValue = sortedValues[j];
 
-			BOOST_REQUIRE_EQUAL_COLLECTIONS(cobTrie->find(rawSearchValue), cobTrie->end(), sortedValues.begin() + j, sortedValues.end());
-			BOOST_REQUIRE_EQUAL_COLLECTIONS(cobTrie->lower_bound(rawSearchValue), cobTrie->end(), sortedValues.begin() + j, sortedValues.end());
-			BOOST_REQUIRE_EQUAL_COLLECTIONS(cobTrie->upper_bound(rawSearchValue), cobTrie->end(), sortedValues.begin() + j + 1, sortedValues.end());
-			BOOST_REQUIRE(cobTrie->scan(rawSearchValue, numberValues - j - 1).compliesWith({ true, *sortedValues.rbegin() }));
+			BOOST_REQUIRE_EQUAL_COLLECTIONS(hotSingleThreaded->find(rawSearchValue), hotSingleThreaded->end(), sortedValues.begin() + j, sortedValues.end());
+			BOOST_REQUIRE_EQUAL_COLLECTIONS(hotSingleThreaded->lower_bound(rawSearchValue), hotSingleThreaded->end(), sortedValues.begin() + j, sortedValues.end());
+			BOOST_REQUIRE_EQUAL_COLLECTIONS(hotSingleThreaded->upper_bound(rawSearchValue), hotSingleThreaded->end(), sortedValues.begin() + j + 1, sortedValues.end());
+			BOOST_REQUIRE(hotSingleThreaded->scan(rawSearchValue, numberValues - j - 1).compliesWith({ true, *sortedValues.rbegin() }));
 		}
 	}
-	/*if (found) {
-		std::cout << "all values were successfully found" << std::endl;
-	}*/
-	//std::cout << "Starting to check integrity" << std::endl;
+	BOOST_REQUIRE_EQUAL_COLLECTIONS(hotSingleThreaded->begin(), hotSingleThreaded->end(), sortedValues.begin(), sortedValues.end());
 
-	BOOST_REQUIRE_EQUAL_COLLECTIONS(cobTrie->begin(), cobTrie->end(), sortedValues.begin(), sortedValues.end());
-
-	bool subtreeValid = isSubTreeValid<ValueType, idx::contenthelpers::IdentityKeyExtractor>(&(cobTrie->mRoot));
+	bool subtreeValid = isSubTreeValid<ValueType, idx::contenthelpers::IdentityKeyExtractor>(&(hotSingleThreaded->mRoot));
 	BOOST_REQUIRE(subtreeValid);
 	BOOST_REQUIRE(found);
 
 	if(expectedLevel != -1) {
-		BOOST_REQUIRE_EQUAL(cobTrie->mRoot.getHeight(), expectedLevel);
+		BOOST_REQUIRE_EQUAL(hotSingleThreaded->mRoot.getHeight(), expectedLevel);
 	}
 
-	size_t currentHeight = cobTrie->getHeight();
+	size_t currentHeight = hotSingleThreaded->getHeight();
 	size_t previousHeight = currentHeight;
 
 	for (size_t i = 0u; i < valuesToInsert.size(); ++i) {
@@ -274,44 +191,44 @@ std::shared_ptr<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthe
 
 		if(i == 24682) {
 			//std::cout << "critical path" << std::endl;
-			bool removed = cobTrie->remove(key);
+			bool removed = hotSingleThreaded->remove(key);
 			BOOST_REQUIRE(removed);
 		} else {
-			BOOST_REQUIRE(cobTrie->remove(key));
+			BOOST_REQUIRE(hotSingleThreaded->remove(key));
 		}
-		currentHeight = cobTrie->getHeight();
+		currentHeight = hotSingleThreaded->getHeight();
 
 		temporarySet.erase(key);
 
 		size_t remainingValues = valuesToInsert.size() - i;
 		///|| remainingValues < 100
 		if( (currentHeight != previousHeight) || i == UINT64_MAX  || remainingValues <= 10 || (i%(remainingValues/10))==0 ) {
-			std::shared_ptr<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>> cobTrie2 = std::make_shared<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>>();
+			std::shared_ptr<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>> hotSingleThreaded2 = std::make_shared<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>>();
 
 			for (size_t j = 0; j <= i; ++j) {
-				BOOST_REQUIRE(!cobTrie->lookup(valuesToInsert[j]).mIsValid);
+				BOOST_REQUIRE(!hotSingleThreaded->lookup(valuesToInsert[j]).mIsValid);
 			}
 
 			for (size_t j = i + 1; j < valuesToInsert.size(); ++j) {
-				cobTrie2->insert(valuesToInsert[j]);
-				BOOST_REQUIRE(cobTrie->lookup(valuesToInsert[j]).mIsValid);
+				hotSingleThreaded2->insert(valuesToInsert[j]);
+				BOOST_REQUIRE(hotSingleThreaded->lookup(valuesToInsert[j]).mIsValid);
 			}
 
-			BOOST_REQUIRE_EQUAL(cobTrie2->getHeight(), cobTrie->getHeight());
-			BOOST_REQUIRE_EQUAL_COLLECTIONS(cobTrie->begin(), cobTrie->end(), temporarySet.begin(), temporarySet.end());
+			BOOST_REQUIRE_EQUAL(hotSingleThreaded2->getHeight(), hotSingleThreaded->getHeight());
+			BOOST_REQUIRE_EQUAL_COLLECTIONS(hotSingleThreaded->begin(), hotSingleThreaded->end(), temporarySet.begin(), temporarySet.end());
 
 			bool subtreeValid = isSubTreeValid<ValueType, idx::contenthelpers::IdentityKeyExtractor>(
-				&(cobTrie->mRoot));
+				&(hotSingleThreaded->mRoot));
 			BOOST_REQUIRE(subtreeValid);
 		}
 		if(currentHeight != previousHeight) {
 			//std::cout << "Checking height change from " << previousHeight << " to " << currentHeight << std::endl;
-			std::shared_ptr<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>> cobTrie2 = std::make_shared<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>>();
+			std::shared_ptr<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>> hotSingleThreaded2 = std::make_shared<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthelpers::IdentityKeyExtractor>>();
 
 			for (size_t j = i; j < valuesToInsert.size(); ++j) {
-				cobTrie2->insert(valuesToInsert[j]);
+				hotSingleThreaded2->insert(valuesToInsert[j]);
 			}
-			BOOST_REQUIRE_EQUAL(cobTrie2->getHeight(), previousHeight);
+			BOOST_REQUIRE_EQUAL(hotSingleThreaded2->getHeight(), previousHeight);
 		}
 		previousHeight = currentHeight;
 	}
@@ -326,7 +243,7 @@ std::shared_ptr<hot::singlethreaded::HOTSingleThreaded<ValueType, idx::contenthe
 	//std::cout << "Checked Integrity" << std::endl;
 }
 
-BOOST_AUTO_TEST_SUITE(SIMDCobTrieIncrementalTest)
+BOOST_AUTO_TEST_SUITE(HOTSingleThreadedTest)
 
 
 BOOST_AUTO_TEST_CASE(testSequentialValuesWithSplitTwoLevel) {
@@ -337,7 +254,7 @@ BOOST_AUTO_TEST_CASE(testSequentialValuesWithSplitTwoLevel) {
 		valuesToInsert.push_back(i);
 	}
 
-	std::shared_ptr<Uint64SimdCobIncrementalTrie> trie = testValues(valuesToInsert, 2);
+	std::shared_ptr<HOTSingleThreadedUint64> trie = testValues(valuesToInsert, 2);
 }
 
 
@@ -427,11 +344,11 @@ BOOST_AUTO_TEST_CASE(testBoundsInteger) {
 		++index;
 	}
 
-	std::shared_ptr<Uint64SimdCobIncrementalTrie> trie = testValues(valuesToInsert);
+	std::shared_ptr<HOTSingleThreadedUint64> trie = testValues(valuesToInsert);
 
 	std::set<uint64_t> redBlackTree(valuesToInsert.begin(), valuesToInsert.end());
 
-	const typename Uint64SimdCobIncrementalTrie::const_iterator &lowerBound = trie->lower_bound(valueAfterAll);
+	const typename HOTSingleThreadedUint64::const_iterator &lowerBound = trie->lower_bound(valueAfterAll);
 		
 	BOOST_REQUIRE_MESSAGE(lowerBound == trie->end(), "Lower bound for value which is after all values is the end");
 	BOOST_REQUIRE_MESSAGE(trie->upper_bound(valueAfterAll) == trie->end(), "Upper bound for a value which is after all values is the end");
@@ -5536,36 +5453,36 @@ BOOST_AUTO_TEST_CASE(testStringPrefixes) {
 }
 
 BOOST_AUTO_TEST_CASE(testEmptyIterator) {
-	Uint64SimdCobIncrementalTrie cobTrie;
+	HOTSingleThreadedUint64 hotSingleThreaded;
 
-	BOOST_REQUIRE(cobTrie.begin() == cobTrie.end());
+	BOOST_REQUIRE(hotSingleThreaded.begin() == hotSingleThreaded.end());
 }
 
 BOOST_AUTO_TEST_CASE(testSingleElementIterator) {
-	Uint64SimdCobIncrementalTrie cobTrie;
-	cobTrie.insert(42u);
+	HOTSingleThreadedUint64 hotSingleThreaded;
+	hotSingleThreaded.insert(42u);
 	std::array<uint64_t, 1> expectedValues = { 42u };
-	BOOST_REQUIRE_EQUAL_COLLECTIONS(cobTrie.begin(), cobTrie.end(), expectedValues.begin(), expectedValues.end());
+	BOOST_REQUIRE_EQUAL_COLLECTIONS(hotSingleThreaded.begin(), hotSingleThreaded.end(), expectedValues.begin(), expectedValues.end());
 }
 
 BOOST_AUTO_TEST_CASE(testFindOnEmptyTrie) {
-	Uint64SimdCobIncrementalTrie cobTrie;
-	BOOST_REQUIRE_MESSAGE(cobTrie.find(42u) == cobTrie.end(), "Find on empty trie must return the end iterator");
+	HOTSingleThreadedUint64 hotSingleThreaded;
+	BOOST_REQUIRE_MESSAGE(hotSingleThreaded.find(42u) == hotSingleThreaded.end(), "Find on empty trie must return the end iterator");
 }
 
 BOOST_AUTO_TEST_CASE(testFindElementNotInTrie) {
-	Uint64SimdCobIncrementalTrie cobTrie;
+	HOTSingleThreadedUint64 hotSingleThreaded;
 
-	cobTrie.insert(41u);
-	cobTrie.insert(43u);
+	hotSingleThreaded.insert(41u);
+	hotSingleThreaded.insert(43u);
 
-	BOOST_REQUIRE_MESSAGE(cobTrie.find(40u) == cobTrie.end(), "Cannot lookup element which is not contained.");
-	BOOST_REQUIRE_MESSAGE(cobTrie.find(42u) == cobTrie.end(), "Cannot lookup element which is not contained.");
-	BOOST_REQUIRE_MESSAGE(cobTrie.find(44u) == cobTrie.end(), "Cannot lookup element which is not contained.");
+	BOOST_REQUIRE_MESSAGE(hotSingleThreaded.find(40u) == hotSingleThreaded.end(), "Cannot lookup element which is not contained.");
+	BOOST_REQUIRE_MESSAGE(hotSingleThreaded.find(42u) == hotSingleThreaded.end(), "Cannot lookup element which is not contained.");
+	BOOST_REQUIRE_MESSAGE(hotSingleThreaded.find(44u) == hotSingleThreaded.end(), "Cannot lookup element which is not contained.");
 }
 
 BOOST_AUTO_TEST_CASE(testUpsert) {
-	hot::singlethreaded::HOTSingleThreaded<std::pair<uint64_t, uint64_t>*, idx::contenthelpers::PairPointerKeyExtractor> cobTrie;
+	hot::singlethreaded::HOTSingleThreaded<std::pair<uint64_t, uint64_t>*, idx::contenthelpers::PairPointerKeyExtractor> hotSingleThreaded;
 
 	std::vector<std::pair<uint64_t, uint64_t>> initialValues {
 		{ 41u, 3u },
@@ -5583,16 +5500,16 @@ BOOST_AUTO_TEST_CASE(testUpsert) {
 
 	for(std::pair<uint64_t, uint64_t> & value : initialValues) {
 		pointerValues.push_back(&value);
-		cobTrie.insert(&value);
+		hotSingleThreaded.insert(&value);
 	}
 
 	std::pair<uint64_t, uint64_t> newValue { 120u, 42u };
 
-	BOOST_REQUIRE_EQUAL_COLLECTIONS(cobTrie.begin(), cobTrie.end(), pointerValues.begin(), pointerValues.end());
-	const idx::contenthelpers::OptionalValue<std::pair<uint64_t, uint64_t> *> &previousValue = cobTrie.upsert(&newValue);
+	BOOST_REQUIRE_EQUAL_COLLECTIONS(hotSingleThreaded.begin(), hotSingleThreaded.end(), pointerValues.begin(), pointerValues.end());
+	const idx::contenthelpers::OptionalValue<std::pair<uint64_t, uint64_t> *> &previousValue = hotSingleThreaded.upsert(&newValue);
 
 	pointerValues[7] = &newValue;
-	BOOST_REQUIRE_EQUAL_COLLECTIONS(cobTrie.begin(), cobTrie.end(), pointerValues.begin(), pointerValues.end());
+	BOOST_REQUIRE_EQUAL_COLLECTIONS(hotSingleThreaded.begin(), hotSingleThreaded.end(), pointerValues.begin(), pointerValues.end());
 
 	BOOST_REQUIRE(previousValue.compliesWith({ true, &initialValues[7] }));
 

@@ -17,7 +17,9 @@ namespace hot { namespace commons {
 
 constexpr uint64_t SUCCESSIVE_EXTRACTION_MASK_WITH_HIGHEST_BIT_SET = 1ul << 63;
 
-inline SingleMaskPartialKeyMapping::SingleMaskPartialKeyMapping(SingleMaskPartialKeyMapping const & src) {
+inline SingleMaskPartialKeyMapping::SingleMaskPartialKeyMapping(SingleMaskPartialKeyMapping const & src)
+	: PartialKeyMappingBase()
+{
 	_mm_storeu_si128(reinterpret_cast<__m128i*>(this), _mm_loadu_si128(reinterpret_cast<__m128i const *>(&src)));
 }
 

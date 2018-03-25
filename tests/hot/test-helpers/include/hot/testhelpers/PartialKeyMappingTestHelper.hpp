@@ -66,9 +66,9 @@ template<typename ExtractionInformationType> uint32_t getMaskWithAlteratingBitsS
 template<typename ExtractionInformationType> uint32_t getMaskForBitsWithIndexLargerThan(ExtractionInformationType  const & extractionInformation, uint16_t bitIndexThreshold);
 
 
-template<typename ExpectedExtractionType, typename ExpectedPartialKeyType> class MaskAndExtractionInformationChecker {
+template<typename ExpectedExtractionType, typename ExpectedPartialKeyType> class MaskAndDiscriminativeBitsRepresentationChecker {
 public:
-	template<typename AssumedExtractionType, typename AssumedPartialKeyType> void operator()(AssumedExtractionType const & extractionType, AssumedPartialKeyType maximumValueForPartialKeyType) const {
+	template<typename AssumedExtractionType, typename AssumedPartialKeyType> void operator()(AssumedExtractionType const &, AssumedPartialKeyType) const {
 		BOOST_REQUIRE_MESSAGE(typeid(AssumedExtractionType) == typeid(ExpectedExtractionType), "Assumed Extraction Type (" << getExtractionTypeName<AssumedExtractionType>() << ") was not expected Extraction Type (" << getExtractionTypeName<ExpectedExtractionType>() << ")");
 		BOOST_REQUIRE_MESSAGE(typeid(AssumedPartialKeyType) == typeid(ExpectedPartialKeyType), "Assumed Mask Type (" << getPartialKeyTypeName<AssumedPartialKeyType>() << ") was not expected Mask Type (" << getPartialKeyTypeName<ExpectedPartialKeyType>() << ")");
 	}

@@ -45,11 +45,6 @@ target_include_directories(benchmark-helpers-lib INTERFACE "${PROJECT_SOURCE_DIR
 
 target_link_libraries(benchmark-helpers-lib INTERFACE utils-lib content-helpers-lib map-helpers-lib pthread TBB::tbb)
 
-if(USE_PAPI)
-    find_package(PAPI)
-    target_link_libraries(benchmark-helpers-lib INTERFACE ${PAPI_LIBRARIES})
-endif(USE_PAPI)
-
 if(USE_COUNTERS)
     target_link_libraries(benchmark-helpers-lib INTERFACE profile-lib)
 endif(USE_COUNTERS)

@@ -51,7 +51,6 @@ IF(COVERAGE)
 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -Wall -W -fprofile-arcs -ftest-coverage")
 
 	include(CodeCoverage)
-
 	message("Code Coverage Activated")
 ENDIF(COVERAGE)
 
@@ -61,6 +60,6 @@ ADD_CUSTOM_TARGET(check COMMAND ${CMAKE_CTEST_COMMAND})
 
 add_subdirectory(third-party/boost-cmake)
 
-ADD_SUBDIRECTORY(tests)
+ADD_SUBDIRECTORY(apps)
 ADD_SUBDIRECTORY(libs)
-#ADD_SUBDIRECTORY(apps)
+ADD_SUBDIRECTORY(tests)

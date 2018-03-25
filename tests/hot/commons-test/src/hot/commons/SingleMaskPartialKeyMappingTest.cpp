@@ -1,7 +1,6 @@
 //
 //  @author robert.binna@uibk.ac.at
 //
-#define BOOST_TEST_DYN_LINK
 
 #include <iostream>
 
@@ -144,51 +143,6 @@ BOOST_AUTO_TEST_CASE(testGetPrefixBitsWith0Bit) {
 
 	BOOST_REQUIRE_EQUAL(prefixBits, subtreePrefixBits);
 }
-
-
-
-/*BOOST_AUTO_TEST_CASE(testExtractMaskFromSuccessiveBytes1UsingMultipleBytes) {
-	uint64_t successiveBytes = 0xFFFFl;
-	BOOST_REQUIRE_EQUAL(hot::singlethreaded::extractMaskFromSuccessiveBytes<1>(&successiveBytes, &successiveBytes), successiveBytes);
-
-	uint64_t extractionBytes = 0b1101111111011111l;
-
-	BOOST_REQUIRE_EQUAL(hot::singlethreaded::extractMaskFromSuccessiveBytes<1>(&successiveBytes, &extractionBytes), 0b0011111111111111l);
-	BOOST_REQUIRE_EQUAL(hot::singlethreaded::extractMaskFromSuccessiveBytes<1>(&extractionBytes, &successiveBytes), 0b1101111111011111l);
-
-}
-
-BOOST_AUTO_TEST_CASE(testGetUsedExtractionBitsForMask1) {
-	uint64_t successiveBytes = 0xFFFFl;
-	BOOST_REQUIRE_EQUAL(hot::singlethreaded::extractMaskFromSuccessiveBytes<1>(&successiveBytes, &successiveBytes), successiveBytes);
-
-	uint64_t extractionBytes = 0b1101111111011111l;
-
-	BOOST_REQUIRE_EQUAL(hot::singlethreaded::getUsedExtractionBitsForMask<1>(0b0011111111111111l, &extractionBytes)[0], extractionBytes);
-	BOOST_REQUIRE_EQUAL(hot::singlethreaded::getUsedExtractionBitsForMask<1>(0b1101111111011111l, &successiveBytes)[0], 0b1101111111011111l);
-}
-
-BOOST_AUTO_TEST_CASE(testGetSuccessiveMaskForBit) {
-	for(uint diffingBytePosition = 0; diffingBytePosition < 255; ++diffingBytePosition) {
-		for(uint diffingBitPositionInByte=0; diffingBitPositionInByte < 8; ++diffingBitPositionInByte) {
-			uint64_t generatedSuccessiveMask = hot::singlethreaded::getSuccessiveMaskForBit(0, diffingBytePosition, diffingBitPositionInByte);
-			uint64_t expectedSuccessiveMask = ((1ul << 7) >> diffingBitPositionInByte) << ((diffingBytePosition) * 8);
-			BOOST_REQUIRE_EQUAL(generatedSuccessiveMask, expectedSuccessiveMask);
-		}
-	}
-
-
-}
-
-BOOST_AUTO_TEST_CASE(testConvertToIndexOfOtherEndiness) {
-	for(uint diffingBytePosition = 0; diffingBytePosition < 255; ++diffingBytePosition) {
-		for(uint diffingBitPositionInByte=0; diffingBitPositionInByte < 8; ++diffingBitPositionInByte) {
-			BOOST_REQUIRE_EQUAL(hot::singlethreaded::convertToIndexOfOtherEndiness(diffingBytePosition, diffingBitPositionInByte) , 7 - diffingBitPositionInByte + ((diffingBytePosition - 0) * 8));
-		}
-	}
-}
-
-*/
 
 
 BOOST_AUTO_TEST_SUITE_END()

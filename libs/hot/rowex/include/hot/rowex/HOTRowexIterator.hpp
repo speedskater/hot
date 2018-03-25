@@ -240,7 +240,7 @@ private:
 		}
 	}
 
-	static inline HotRowexIteratorBufferState<KeyType> fillBuffer(HotRowexIteratorBufferState<KeyType> iteratorBufferState, HOTRowexSynchronizedIteratorStackState stackState, MemoryGuard const & guard) {
+	static inline HotRowexIteratorBufferState<KeyType> fillBuffer(HotRowexIteratorBufferState<KeyType> iteratorBufferState, HOTRowexSynchronizedIteratorStackState stackState, MemoryGuard const & /* guard */) {
 		while(true) {
 			switch(stackState.mBufferState) {
 				case ITERATOR_FILL_BUFFER_STATE_DESCEND: {

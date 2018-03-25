@@ -1,0 +1,25 @@
+language: cpp
+matrix:
+  include:
+    # works on Precise and Trusty
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - george-edison55-precise-backports
+          packages:
+            - g++-7
+            - cmake-data
+            - cmake
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+
+before_install:
+    - eval "${MATRIX_EVAL}"
+compiler:
+  - gcc
+script:
+  ./runTests.sh
+after_success:
+  - bash <(curl -s https://codecov.io/bash) -f coverageReport/libraries_coverage.info

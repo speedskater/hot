@@ -18,4 +18,4 @@ endif()
 
 add_library(hot-test-helpers-lib ${test-helper-SOURCES} ${test-helper-HEADERS})
 target_include_directories(hot-test-helpers-lib PUBLIC "${TEST_HELPERS_INCLUDE_DIRECTORY}")
-target_link_libraries(hot-test-helpers-lib hot-commons-lib)
+target_link_libraries(hot-test-helpers-lib hot-commons-lib  Boost::unit_test_framework)

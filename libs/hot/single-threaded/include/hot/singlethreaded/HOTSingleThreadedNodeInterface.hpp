@@ -53,7 +53,7 @@ public:
 	 * @param numberEntries the number of entries this node should contain
 	 * @return the allocated memory
 	 */
-	inline void* operator new (size_t baseSize, uint16_t const numberEntries);
+	inline void* operator new (size_t /* baseSize */, uint16_t const numberEntries);
 
 	/**
 	 * releases a nodes memory

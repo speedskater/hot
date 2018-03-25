@@ -130,7 +130,7 @@ std::hash<std::thread::id> ThreadIdHashCompare::hasher;
 class TimerBasedIncreasingIdGenerator {
 
 public:
-	uint64_t generateValue(size_t index, size_t shortThreadId) const {
+	uint64_t generateValue(size_t /* index */, size_t shortThreadId) const {
 		assert(shortThreadId < (1 << 6));
 		uint64_t increasingId = ((rdtsc() << 6)  + shortThreadId ) & static_cast<uint64_t>(INT64_MAX);
 		return increasingId + shortThreadId;
@@ -162,7 +162,7 @@ public:
 
 	}
 
-	ValueType generateValue(size_t index, size_t shortThreadId) const {
+	ValueType generateValue(size_t index, size_t /* shortThreadId */) const {
 		return mValues[index];
 	}
 };

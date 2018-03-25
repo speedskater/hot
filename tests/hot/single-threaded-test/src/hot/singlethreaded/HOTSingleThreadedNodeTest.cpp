@@ -1,7 +1,6 @@
 //
 //  @author robert.binna@uibk.ac.at
 //
-#define BOOST_TEST_DYN_LINK
 
 #include <cstdint>
 #include <algorithm>
@@ -110,7 +109,7 @@ template<typename Typename> struct BaseType {
 };
 
 template<typename ExpectedType, typename GivenType> struct ReturnValueOnMatchingTypes {
-	std::shared_ptr<ExpectedType const> operator()(std::shared_ptr<GivenType const> given) {
+	std::shared_ptr<ExpectedType const> operator()(std::shared_ptr<GivenType const> /* given */) {
 		return std::shared_ptr<ExpectedType const>(nullptr);
 	};
 };

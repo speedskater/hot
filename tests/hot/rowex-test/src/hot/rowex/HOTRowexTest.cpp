@@ -2,7 +2,6 @@
 //  Created by Robert Binna on 23.12.14.
 //
 //
-#define BOOST_TEST_DYN_LINK
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -35,7 +34,7 @@
 
 namespace hot { namespace rowex {
 
-using Uint64SimdCobIncrementalTrie = hot::rowex::HOTRowex<uint64_t, idx::contenthelpers::IdentityKeyExtractor>;
+using HOTRowexUint64 = hot::rowex::HOTRowex<uint64_t, idx::contenthelpers::IdentityKeyExtractor>;
 using CStringTrieType = hot::rowex::HOTRowex<const char*, idx::contenthelpers::IdentityKeyExtractor>;
 
 template<typename ValueType>
@@ -271,7 +270,7 @@ BOOST_AUTO_TEST_CASE(testSequentialValuesWithSplitTwoLevel) {
 		valuesToInsert.push_back(i);
 	}
 
-	std::shared_ptr<Uint64SimdCobIncrementalTrie> trie = testSerial(valuesToInsert);
+	std::shared_ptr<HOTRowexUint64> trie = testSerial(valuesToInsert);
 	BOOST_REQUIRE_EQUAL(trie->mRoot.getHeight(), 2);
 
 	for(int i = 0; i < 100; ++i) {
@@ -431,11 +430,11 @@ BOOST_AUTO_TEST_CASE(testBoundsInteger) {
 		++index;
 	}
 
-	std::shared_ptr<Uint64SimdCobIncrementalTrie> trie = testSerial(valuesToInsert);
+	std::shared_ptr<HOTRowexUint64> trie = testSerial(valuesToInsert);
 
 	std::set<uint64_t> redBlackTree(valuesToInsert.begin(), valuesToInsert.end());
 
-	const typename Uint64SimdCobIncrementalTrie::const_iterator &lowerBound = trie->lower_bound(valueAfterAll);
+	const typename HOTRowexUint64::const_iterator &lowerBound = trie->lower_bound(valueAfterAll);
 		
 	BOOST_REQUIRE_MESSAGE(lowerBound == trie->end(), "Lower bound for value which is after all values is the end");
 	BOOST_REQUIRE_MESSAGE(trie->upper_bound(valueAfterAll) == trie->end(), "Upper bound for a value which is after all values is the end");
@@ -544,25 +543,25 @@ BOOST_AUTO_TEST_CASE(testStringPrefixes) {
 }
 
 BOOST_AUTO_TEST_CASE(testEmptyIterator) {
-	Uint64SimdCobIncrementalTrie cobTrie;
+	HOTRowexUint64 cobTrie;
 
 	BOOST_REQUIRE(cobTrie.begin() == cobTrie.end());
 }
 
 BOOST_AUTO_TEST_CASE(testSingleElementIterator) {
-	Uint64SimdCobIncrementalTrie cobTrie;
+	HOTRowexUint64 cobTrie;
 	cobTrie.insert(42u);
 	std::array<uint64_t, 1> expectedValues = { 42u };
 	BOOST_REQUIRE_EQUAL_COLLECTIONS(cobTrie.begin(), cobTrie.end(), expectedValues.begin(), expectedValues.end());
 }
 
 BOOST_AUTO_TEST_CASE(testFindOnEmptyTrie) {
-	Uint64SimdCobIncrementalTrie cobTrie;
+	HOTRowexUint64 cobTrie;
 	BOOST_REQUIRE_MESSAGE(cobTrie.find(42u) == cobTrie.end(), "Find on empty trie must return the end iterator");
 }
 
 BOOST_AUTO_TEST_CASE(testFindElementNotInTrie) {
-	Uint64SimdCobIncrementalTrie cobTrie;
+	HOTRowexUint64 cobTrie;
 
 	cobTrie.insert(41u);
 	cobTrie.insert(43u);

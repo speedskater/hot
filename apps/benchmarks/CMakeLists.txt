@@ -1,0 +1,2 @@
+ADD_SUBDIRECTORY(integer)
+ADD_SUBDIRECTORY(string)
