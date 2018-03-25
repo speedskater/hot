@@ -17,9 +17,11 @@ matrix:
             - libtcmalloc-minimal4-dbg
             - libgoogle-perftools-dev
       env:
-        global:
-        - CC=gcc-7 CXX=g++-7 GCOV=gcov-7
+        - COMPILER=g++-7
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7 && GCOV=gcov-7"
 
+before_install:
+    - eval "${MATRIX_EVAL}"
 compiler:
   - gcc
 script:
