@@ -1,3 +1,7 @@
+[![Build Status][travis-badge]][travis-link]
+[![codecov][codecov-badge]][codecov-link]
+[![ISC License][license-badge]](LICENSE.md)
+
 # What is HOT
 HOT stands for Height Optimized Trie.
 It is an order preserving index structure which facilitates a dynamic span to reduce the overall tree height.
@@ -88,6 +92,11 @@ To compile and use this library the following requirements must be met:
 
 HOT is designed as a header only library. In case of the single threaded version no external dependencies except the source code contained in this project are required.
 For the concurrent implementation the intel thread building blocks as well as a fast allocator like tcmalloc is required.
+As HOT makes heavy use of the AVX2 and BMI2 instruction sets, please set the architecture specific flags accordingly.
+For instance, to compile HOT for the haswell instruction set using GCC please provide "-march=haswell" as compiler flag.
+
+For integrating all of HOT into your own project using CMake please have a look at the sample project
+    https://github.com/speedskater/hot-sample
 
 To integrate HOT into your project you can either copy the following source directories right into your project:
     - libs/idx/content-helper (helper functions to encode tuple identifiers, convert keys to their binary representation and so on.)
@@ -95,7 +104,49 @@ To integrate HOT into your project you can either copy the following source dire
     - libs/hot/rowex (the concurrent implementation of HOT)
     - libs/hot/single-threaded (the single threaded version of HOT)
 
-or directly include the HOT root CMakeLists.txt into your own project.
+
+# API
+
+HOT consists of two template classes.
+HOTSingleThreaded, as the name suggests, is the single threaded version of HOT. Whereas, HOTRowex represents the concurrent implementation of HOT.
+To use HOTSingleThreaded include <hot/singlethreaded/HOTSingleThreaded.hpp>. To use the concurrent implementation use <hot/rowex/HOTRowex.hpp>
+
+Both containers provide the same api.
+
+Both containers expect two template arguments.
+    1. The first defines the type of the value to index.
+    2. The second defines the type used to extract the key.
+
+Both containers support the following methods:
+
+    * Optional<Value> lookup(Key):
+        Searches, whether a value for the provided key is contained. If no matching value can be found, the returned value is marked as invalid.
+
+    * bool insert(Value):
+        Inserts the given value into the index. The value is inserted according to its keys value.
+    	In case the index already contains a value for the corresponding key, the value is not inserted.
+    	It returns true if the value can be inserted, false if the index already contains a value for the corresponding key.
+
+    * Optional<Value> upsert(Value):
+        Executes an upsert for the given value.
+        If the index does not contain a value for the value's key, the upsert operation executes an insert.
+        It the index already contains a value for the value's key, this previously contained value is replaced and returned
+
+    * Iterator begin()
+        Returns an iterator to the first value according to the key order.
+    * end()
+        Returns an iterator, which is positioned after the last element.
+    * Iterator find(Key)
+        Searches an entry for the given key. In case an entry is found, an iterator for this entry is returned.
+        If no matching entry is found the end() iterator is returned.
+    * Iterator lower_bound()
+        Returns an iterator to the first entry which has a key, which is not smaller than the given search key.
+        This is either an iterator to the matching entry itself or the first value contained in the index which has a key which is larger than the search key.
+    * Iterator upper_bound()
+        Returns an iterator to the first entry which has a key which is larger than the given search key.
+
+Methods contained only in the single threaded version:
+    * remove(Key)
 
 # Limitations
 

@@ -96,7 +96,7 @@ template<typename ValueType, template <typename> typename KeyExtractor> struct H
 	inline bool remove(KeyType const & key);
 
 	/**
-	 * Inserts the given record into the index. The value is inserted according to its keys value.
+	 * Inserts the given value into the index. The value is inserted according to its keys value.
 	 * In case the index already contains a value for the corresponding key, the value is not inserted.
 	 *
 	 * @param value the value to insert.
