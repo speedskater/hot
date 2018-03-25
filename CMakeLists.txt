@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 PROJECT(HOT_ROOT)
 
 option(USEAVX2 "USEAVX2" ON)
+option(USETRAVIS "USETRAVIS" OFF)
 option(USEAVX512 "USEAVX512" OFF)
 option(USE_COUNTERS "USE_COUNTERS" OFF)
 option(COVERAGE "COVERAGE" OFF)
@@ -11,9 +12,11 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
 endif()
 
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/third-party/bilke-cmake-modules/")
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/third-party/bilke-cmake-modules/")
 
-if(USEAVX2)
+if(USETRAVIS)
+	SET(CMAKE_CXX_FLAGS "-std=c++14 -march=haswell -Wno-deprecated-declarations -Wall -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -faligned-new") #-fstack-check -fsanitize=undefined ${CMAKE_CXX_FLAGS}
+elseif(USEAVX2)
 	SET(CMAKE_CXX_FLAGS "-std=c++14 -march=native -mavx -mavx2 -mbmi2 -mlzcnt -Wno-deprecated-declarations -Wall -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -faligned-new") #-fstack-check -fsanitize=undefined ${CMAKE_CXX_FLAGS}
 	SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 else()
@@ -37,12 +40,12 @@ find_library(TC_MALLOC_LIBRARY
 	NO_DEFAULT_PATH
 )
 
-SET(TBB_ROOT "${PROJECT_SOURCE_DIR}/third-party/tbb")
+SET(TBB_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/third-party/tbb")
 include(${TBB_ROOT}/cmake/TBBBuild.cmake)
 tbb_build(TBB_ROOT ${TBB_ROOT} CONFIG_DIR TBB_DIR MAKE_ARGS)
 find_package(TBB REQUIRED)
 
-SET(Hana_ROOT "${PROJECT_SOURCE_DIR}/third-party/boost-hana")
+SET(Hana_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/third-party/boost-hana")
 
 IF(COVERAGE)
 	#call with -DCOVERAGE=1

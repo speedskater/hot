@@ -4,7 +4,7 @@ SOURCE_ROOT_DIRECTORY=$(readlink -f $( dirname ${BASH_SOURCE[0]} ))
 rm -rf $SOURCE_ROOT_DIRECTORY/coverage-build
 mkdir $SOURCE_ROOT_DIRECTORY/coverage-build
 cd $SOURCE_ROOT_DIRECTORY/coverage-build
-cmake ../ -DCOVERAGE=ON -DCMAKE_BUILD_TYPE=Debug
+cmake ../ -DCOVERAGE=ON -DCMAKE_BUILD_TYPE=Debug "$@"
 cd tests
 make
 testReturnCode=$(make test)
