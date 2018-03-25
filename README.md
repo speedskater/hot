@@ -1,8 +1,8 @@
 # What is HOT
 HOT stands for Height Optimized Trie.
 It is an order preserving index structure which facilitates a dynamic span to reduce the overall tree height.
-This makes it highly suitable for general purpose workloads where the distribution of the data is not known in advance, and
-non uniformly distributed data can be expected
+This makes it highly suitable for general purpose workloads where the distribution of the data is not known in advance and
+non uniformly distributed data can be expected.
 
 Its structure and algorithmic details can be found in:
 
@@ -11,11 +11,11 @@ by Binna, Zangerle, Pichl, Specht and Leis
 
 # Content
 
-This implementation of HOT is written in C++14 and can be built with the cmake build system.
+This implementation of HOT is written in C++14 and can be built with the CMake build system.
 It is a cleaned up version of the code used in the original HOT publication.
 This libraries contains two different implementations of HOT.
-    * A single threaded version supporting insert, lookup, scan and deletion operations.
-    * A concurrent version using a ROWEX (Read-Optimized Write EXclusion) synchronization strategy. The concurrent implementation currently onyl supports insert, lookup and scan operatoins
+ * A single threaded version supporting insert, lookup, scan and deletion operations.
+ * A concurrent version using a ROWEX (Read-Optimized Write EXclusion) synchronization strategy. The concurrent implementation currently supports only insert, lookup and scan operatoins
 
 Additionally this library contains tools for creating different variations of these two index structures.
 Contained are tools for integers and c-strings. But using the provided helper structures custom variations can be created.
@@ -61,12 +61,12 @@ To run the benchmark applications set the current working directory to the `rele
 Choose the desired benchmark binary.
 
 For string benchmarks the binaries are:
-    * Concurrent HOT: ```./apps/benchmarks/strings/hot-rowex-string-benchmark/hot-rowex-string-benchmark```
-    * Single threaded HOT ```./apps/benchmarks/strings/hot-single-threaded-string-benchmark/hot-single-threaded-string-benchmark```
+ * Concurrent HOT: ```./apps/benchmarks/strings/hot-rowex-string-benchmark/hot-rowex-string-benchmark```
+ * Single threaded HOT ```./apps/benchmarks/strings/hot-single-threaded-string-benchmark/hot-single-threaded-string-benchmark```
 
 For integer benchmarks the binaries are:
-    *  Concurrent HOT: ```./apps/benchmarks/integer/hot-rowex-integer-benchmark/hot-rowex-integer-benchmark```
-    *  Single threaded HOT ```./apps/benchmarks/integer/hot-single-threaded-integer-benchmark/hot-single-threaded-integer-benchmark```
+ *  Concurrent HOT: ```./apps/benchmarks/integer/hot-rowex-integer-benchmark/hot-rowex-integer-benchmark```
+ *  Single threaded HOT ```./apps/benchmarks/integer/hot-single-threaded-integer-benchmark/hot-single-threaded-integer-benchmark```
 
 The parameters which are required to run the benchmarks are listed by the binaries usage dialogs which can be invoke like this:
 
@@ -101,6 +101,6 @@ or directly include the HOT root CMakeLists.txt into your own project.
 
 The provided implementations currently have the following limitations:
 
-    * Deletion operations are not supported by the concurrent implementation of HOT
-    * The length of the keys are restricted to 255 bytes
-    * The maximum length of the supported tuple identifiers and therefore the keys which can directly be embedded into the indexes are restricted to 63 bits.
+ * Deletion operations are not supported by the concurrent implementation of HOT
+ * The length of the keys are restricted to 255 bytes
+ * The maximum length of the supported tuple identifiers and therefore the keys which can directly be embedded into the indexes are restricted to 63 bits.
