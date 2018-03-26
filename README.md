@@ -72,12 +72,12 @@ For integer benchmarks the binaries are:
 
 The parameters which are required to run the benchmarks are listed by the binaries usage dialogs which can be invoke like this:
 
-    ```<benchmark-binary> -help```
+    <benchmark-binary> -help
 
 For instance to benchmark the performance of single threaded HOT for 50 mio randomly distributed integers, with random lookup invoke the corresponding
 benchmark application as follows.
 
-    ```./apps/benchmarks/integer/hot-single-threaded-integer-benchmark/hot-single-threaded-integer-benchmark -insert=random -size=50000000 -insertModifier=random -lookup=random```
+    ./apps/benchmarks/integer/hot-single-threaded-integer-benchmark/hot-single-threaded-integer-benchmark -insert=random -size=50000000 -insertModifier=random -lookup=random
 
 # Requirements
 
@@ -122,8 +122,8 @@ Both containers support the following methods:
 
     * bool insert(Value):
         Inserts the given value into the index. The value is inserted according to its keys value.
-    	In case the index already contains a value for the corresponding key, the value is not inserted.
-    	It returns true if the value can be inserted, false if the index already contains a value for the corresponding key.
+        In case the index already contains a value for the corresponding key, the value is not inserted.
+        It returns true if the value can be inserted, false if the index already contains a value for the corresponding key.
 
     * Optional<Value> upsert(Value):
         Executes an upsert for the given value.
@@ -144,6 +144,7 @@ Both containers support the following methods:
         Returns an iterator to the first entry which has a key which is larger than the given search key.
 
 Methods contained only in the single threaded version:
+
     * remove(Key)
 
 # Limitations
