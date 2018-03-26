@@ -405,21 +405,23 @@ template<typename ValueType, typename ValueGenerator, typename... Args> void exe
 	Scanner<ValueType> scanner { alreadyInsertedRanges, hot };
 	size_t numberValuesToInsert = numberOfValuesToInsert;
 
+	size_t numberThreadsToUse = std::max<size_t>(static_cast<size_t>(std::thread::hardware_concurrency()/2.0), 1ul);
+
 	std::vector<std::thread> searchThreads;
-	for(size_t i=0; i < (std::thread::hardware_concurrency()/2.0); ++i) {
+	for(size_t i=0; i < numberThreadsToUse; ++i) {
 		searchThreads.push_back(std::thread([&searcher] {
 			searcher();
 		}));
 	}
 	std::vector<std::thread> scanThreads;
-	for(size_t i=0; i < (std::thread::hardware_concurrency()/2.0); ++i) {
+	for(size_t i=0; i < numberThreadsToUse; ++i) {
 		scanThreads.push_back(std::thread([&scanner] {
 			scanner();
 		}));
 	}
 
 	tbb::task_group insertGroup;
-	tbb::task_arena limitedInsertThreads(std::thread::hardware_concurrency()/2.0);
+	tbb::task_arena limitedInsertThreads(numberThreadsToUse);
 
 	limitedInsertThreads.execute([&]{ // Use at most 2 threads for this job.
 		insertGroup.run([&]{ // run in task group
@@ -447,9 +449,9 @@ template<typename ValueType, typename ValueGenerator, typename... Args> void exe
 		thread.join();
 	});
 
-	/*std::cout << "Executed " << inserter.getNumberOfSuccesfulInserts() << " succesful inserts ( " << inserter.getNumberOfFailedInserts() << " failed)" << std::endl;
+	std::cout << "Executed " << inserter.getNumberOfSuccesfulInserts() << " succesful inserts ( " << inserter.getNumberOfFailedInserts() << " failed)" << std::endl;
 	std::cout << "Executed " << searcher.getNumberOfSuccesfulLookups() << " succesful lookups (" << searcher.getNumberOfFailedLookups() << " failed)" << std::endl;
-	std::cout << "Executed " << scanner.getNumberSuccessfulScanOperations() << " scans" << std::endl;*/
+	std::cout << "Executed " << scanner.getNumberSuccessfulScanOperations() << " scans" << std::endl;
 
 	for(std::string const & failure : scanner.mFailures) {
 		std::cerr << "Failure in scan: " << failure << std::endl;
