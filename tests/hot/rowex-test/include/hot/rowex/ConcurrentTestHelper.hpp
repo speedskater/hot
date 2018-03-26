@@ -421,7 +421,7 @@ template<typename ValueType, typename ValueGenerator, typename... Args> void exe
 	}
 
 	tbb::task_group insertGroup;
-	tbb::task_arena limitedInsertThreads(numberThreadsToUse);
+	tbb::task_arena limitedInsertThreads(std::max<size_t>(2, numberThreadsToUse), 1);
 
 	limitedInsertThreads.execute([&]{ // Use at most 2 threads for this job.
 		insertGroup.run([&]{ // run in task group
