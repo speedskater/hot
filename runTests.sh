@@ -12,7 +12,7 @@ testReturnCode=$?
 mkdir $SOURCE_ROOT_DIRECTORY/coverageReport
 cd $SOURCE_ROOT_DIRECTORY/coverageReport
 lcov -o overall_coverage.info -c -d $SOURCE_ROOT_DIRECTORY/coverage-build
-lcov --extract overall_coverage.info "${SOURCE_ROOT_DIRECTORY}/libs/**/*" --output-file liberaries_coverage.info
-genhtml -o . liberaries_coverage.info 
+lcov --extract overall_coverage.info "${SOURCE_ROOT_DIRECTORY}/libs/**/*" --output-file libraries_coverage.info
+genhtml -o . libraries_coverage.info
 cd $CURRENT_DIRECTORY
 exit ${testReturnCode}
