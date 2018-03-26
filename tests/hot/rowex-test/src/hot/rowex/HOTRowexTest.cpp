@@ -372,7 +372,7 @@ BOOST_AUTO_TEST_CASE(testSequentialValuesWithSplitThreeLevelsReverse) {
 	testSerial(valuesToInsert);
 
 	for(int i = 0; i < 2; ++i) {
-		BOOST_REQUIRE_EQUAL(testParallel(valuesToInsert)->mRoot.getHeight(), 4);
+		BOOST_REQUIRE_EQUAL(testParallel(valuesToInsert)->mRoot.getHeight(), 3);
 	}
 }
 

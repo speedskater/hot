@@ -85,19 +85,6 @@ BOOST_AUTO_TEST_CASE(getRelevantBitsForEntries8BitsAndIgnoreIrreleantBits) {
 }
 
 
-/*BOOST_AUTO_TEST_CASE(getRelevantBitsForEntries8BitsAndIntermediateBits) {
-	SparsePartialKeys<uint8_t>* entriesMasks = allocateMasks<uint8_t>();
-
-	for(size_t i=0; i < 8; ++i) {
-		entriesMasks->mEntries[i] = (1 << (i + 1));
-	}
-
-
-	BOOST_REQUIRE_EQUAL(entriesMasks->getRelevantBitsForEntries(0b11111101), 0b11111101);
-
-	free(entriesMasks);
-}*/
-
 BOOST_AUTO_TEST_CASE(getRelevantBitsForEntries16Bit) {
 	SparsePartialKeys<uint16_t>* entriesMasks = allocateMasks<uint16_t>();
 

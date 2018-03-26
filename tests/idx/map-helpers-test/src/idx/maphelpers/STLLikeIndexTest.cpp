@@ -72,25 +72,6 @@ BOOST_AUTO_TEST_CASE(testUpsert) {
 	BOOST_REQUIRE(previousValue2.compliesWith({}));
 }
 
-/*BOOST_AUTO_TEST_CASE(testPointerPairValuesMap) {
-
-	idx::maphelpers::STLLikeIndex<std::map, std::pair<char const *, uint64_t>*, idx::contenthelpers::PairPointerKeyExtractor> map;
-
-	char const * test = "test";
-	std::pair<char const*, uint64_t> containedValue = { test, 42u };
-
-	char const * test2 = "test2";
-	std::pair<char const*, uint64_t> notContainedValue = { test2, 22u };
-
-	map.insert(&containedValue);
-
-	BOOST_REQUIRE_EQUAL(map.find("test", &containedValue), true);
-	BOOST_REQUIRE_EQUAL(map.find("test", &notContainedValue), false);
-	BOOST_REQUIRE_EQUAL(map.find("test2", &notContainedValue), false);
-	BOOST_REQUIRE_EQUAL(map.lookup("test2", &containedValue), false);
-}*/
-
-
 BOOST_AUTO_TEST_SUITE_END()
 
 }}
