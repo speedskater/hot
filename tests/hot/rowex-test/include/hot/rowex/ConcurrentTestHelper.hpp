@@ -447,9 +447,9 @@ template<typename ValueType, typename ValueGenerator, typename... Args> void exe
 		thread.join();
 	});
 
-	std::cout << "Executed " << inserter.getNumberOfSuccesfulInserts() << " succesful inserts ( " << inserter.getNumberOfFailedInserts() << " failed)" << std::endl;
+	/*std::cout << "Executed " << inserter.getNumberOfSuccesfulInserts() << " succesful inserts ( " << inserter.getNumberOfFailedInserts() << " failed)" << std::endl;
 	std::cout << "Executed " << searcher.getNumberOfSuccesfulLookups() << " succesful lookups (" << searcher.getNumberOfFailedLookups() << " failed)" << std::endl;
-	std::cout << "Executed " << scanner.getNumberSuccessfulScanOperations() << " scans" << std::endl;
+	std::cout << "Executed " << scanner.getNumberSuccessfulScanOperations() << " scans" << std::endl;*/
 
 	for(std::string const & failure : scanner.mFailures) {
 		std::cerr << "Failure in scan: " << failure << std::endl;
