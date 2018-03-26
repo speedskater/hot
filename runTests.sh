@@ -7,7 +7,7 @@ cd $SOURCE_ROOT_DIRECTORY/coverage-build
 cmake ../ -DCOVERAGE=ON -DCMAKE_BUILD_TYPE=Debug "$@"
 cd tests
 make
-make test
+make CTEST_OUTPUT_ON_FAILURE=1 test
 testReturnCode=$?
 mkdir $SOURCE_ROOT_DIRECTORY/coverageReport
 cd $SOURCE_ROOT_DIRECTORY/coverageReport
