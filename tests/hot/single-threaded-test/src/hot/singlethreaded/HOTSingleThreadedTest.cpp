@@ -273,40 +273,27 @@ BOOST_AUTO_TEST_CASE(testSequentialValuesWithSplitThreeLevel) {
 
 }
 
-BOOST_AUTO_TEST_CASE(testSequentialValuesWithSplitFourLevels) {
+BOOST_AUTO_TEST_CASE(testSequentialValuesWithSplitThreeLevelsReverse) {
 	std::vector<uint64_t> valuesToInsert;
 
-	int numberEntries = 32 * 32 * 32 * 32;
-
-	for (int i = 0; i < numberEntries; ++i) {
-		valuesToInsert.push_back(i);
-	}
-
-	testValues(valuesToInsert, 4);
-
-}
-
-BOOST_AUTO_TEST_CASE(testSequentialValuesWithSplitFourLevelsReverse) {
-	std::vector<uint64_t> valuesToInsert;
-
-	int numberEntries = 32 * 32 * 32 * 32;
+	int numberEntries = 32 * 32 * 32;
 
 	for (int i = numberEntries - 1; i >= 0; --i) {
 		valuesToInsert.push_back(i);
 	}
 
-	testValues(valuesToInsert, 4);
+	testValues(valuesToInsert, 3);
 
 }
 
-BOOST_AUTO_TEST_CASE(testRandomValuesFourLevels) {
+BOOST_AUTO_TEST_CASE(testRandomValues) {
 	std::vector<uint64_t> valuesToInsert;
 	idx::utils::RandomRangeGenerator<uint64_t> rnd{12344567, 0, INT64_MAX};
 
 	//uint numberValues = 10000;
 	//uint numberValues = 16000;
 
-	unsigned int numberValues = 1000000;
+	unsigned int numberValues = 100000;
 
 	for (size_t i = 0u; i < numberValues; ++i) {
 		valuesToInsert.push_back(rnd());
@@ -320,7 +307,7 @@ BOOST_AUTO_TEST_CASE(testBoundsInteger) {
 	std::set<uint64_t> sortedValues;
 	idx::utils::RandomRangeGenerator<uint64_t> rnd{12344567, 0, INT64_MAX};
 
-	unsigned int numberValues = 1000000;
+	unsigned int numberValues = 100000;
 
 	for (size_t i = 0u; i < numberValues; ++i) {
 		sortedValues.insert(rnd());
